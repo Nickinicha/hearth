@@ -245,6 +245,16 @@ function updateMoodIndicator(moodValue) {
   moodIndicator.textContent = moodMap[moodValue] ?? "";
 }
 
+function replayGalaxyTransition(...elements) {
+  elements.forEach((el) => {
+    if (!el) return;
+    el.classList.remove("galaxy-transition");
+    // Force reflow so animation replays on each scene
+    void el.offsetWidth;
+    el.classList.add("galaxy-transition");
+  });
+}
+
 function showInternalNote(noteObj) {
   if (!internalNote) {
     return;
@@ -902,6 +912,7 @@ function renderScene(scene) {
   updateMoodIndicator(scene.mood ?? "neutral");
   resultText.textContent = "";
   restartButton.hidden = true;
+  replayGalaxyTransition(sceneTitle, sceneDescription, sceneChoicePrompt, resultText, moodIndicator);
 
   choiceContainer.innerHTML = "";
   scene.choices.forEach((choice) => {
@@ -927,23 +938,30 @@ function renderPhaseOneSummary() {
   const scoreSummary = getScoreSummary(state);
   const styleSummary = ATTACHMENT_STYLE_SUMMARIES[dominantStyle];
 
-  phaseLabel.textContent = t(UI.phase1Complete);
-  sceneLabel.textContent = t({ EN: "Spiritual Reflection", TH: "ภาพสะท้อนทางจิตวิญญาณ" });
-  sceneTitle.textContent = t(UI.emotionalBlueprint);
+  phaseLabel.textContent = t({ EN: "Celestial Guidance", TH: "คำชี้นำแห่งท้องฟ้า" });
+  sceneLabel.textContent = t({ EN: "Star Alignment Reading", TH: "การอ่านแนวเรียงตัวแห่งดวงดาว" });
+  sceneTitle.textContent = styleSummary ? t(styleSummary.name) : t(UI.emotionalBlueprint);
   sceneDescription.textContent = styleSummary
     ? `${styleSummary.icon} ${t(styleSummary.spiritual)}`
     : t(UI.summaryIntro);
   choiceContainer.innerHTML = "";
 
-  resultText.textContent = formatUi(UI.summaryPrimaryLine, {
-    style: labelStyle(dominantStyle),
-    archetype: labelArchetype(dominantArchetype),
-    pattern: labelPattern(dominantPattern),
-    scores: scoreSummary
-  });
+  resultText.textContent = formatUi(
+    {
+      EN: "Cosmic Energy trend: {style}. Star Alignment reflects {archetype} with a {pattern} arc. Soul Growth markers -> {scores}.",
+      TH: "แนวโน้มพลังจักรวาล: {style} การเรียงตัวของดาวสะท้อน {archetype} พร้อมวิถี {pattern} สัญญาณการเติบโตของจิตวิญญาณ -> {scores}"
+    },
+    {
+      style: styleSummary ? t(styleSummary.name) : labelStyle(dominantStyle),
+      archetype: labelArchetype(dominantArchetype),
+      pattern: labelPattern(dominantPattern),
+      scores: scoreSummary
+    }
+  );
 
   restartButton.hidden = false;
   restartButton.textContent = t({ EN: "Restart Story", TH: "เริ่มเรื่องใหม่" });
+  replayGalaxyTransition(sceneTitle, sceneDescription, resultText);
 }
 
 function renderPhaseTwoTurn(options = {}) {
