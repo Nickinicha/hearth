@@ -76,29 +76,54 @@ export const PHASE_1_SCENES = [
       EN: "The Emotional Mirror",
       TH: "กระจกสะท้อนอารมณ์"
     },
+    mood: "neutral",
+    backgroundTint: null,
+    tintOpacity: 0,
+    speaker: {
+      EN: null,
+      TH: null
+    },
+    choicePrompt: {
+      EN: "What's sitting in your chest right now?",
+      TH: "ตอนนี้ในอกคุณมีอะไรอยู่?"
+    },
     description: {
       EN:
-        "You have barely spoken since getting home. Your partner notices, not to pressure you, but because they are afraid of losing you to silence. How do you respond?",
+        "It's 9:47 PM. You're lying on your side, phone screen glowing in the dark. You've opened and closed the same chat three times without typing anything. Somewhere in the next room, you can hear them moving around.",
       TH:
-        "ตั้งแต่กลับบ้านมาคุณแทบไม่พูดอะไรเลย คนรักสังเกตเห็น และไม่อยากปล่อยผ่าน ไม่ใช่เพราะจะกดดันคุณ แต่เพราะกลัวว่าจะเข้าไม่ถึงคุณอีกต่อไป คุณจะตอบอย่างไร?"
+        "สี่ทุ่มสี่สิบเจ็ดนาที คุณนอนตะแคงอยู่ หน้าจอโทรศัพท์เรืองแสงในห้องมืด เปิดแล้วปิดหน้าแชทเดิมซ้ำแล้วซ้ำเล่า โดยที่ยังไม่ได้พิมพ์อะไรเลย ได้ยินเสียงเขา/เธอขยับตัวอยู่ในห้องถัดไป"
     },
     choices: [
       {
         id: "mirror-open",
         text: {
-          EN: "\"I just need a moment... but I'll tell you soon.\"",
-          TH: "\"ขอเวลาแป๊บนึงนะ แต่เดี๋ยวจะเล่าให้ฟัง\""
+          EN: "Tired. Just... tired.",
+          TH: "เหนื่อย แค่นั้นเลย"
         },
-        archetypeHint: "The Anchor",
-        styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
-        dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
+        internalNote: {
+          EN: "Not angry. Not sad. Just worn out in a way that's hard to explain.",
+          TH: "ไม่ใช่โกรธ ไม่ใช่เศร้า แค่หมดแรงในแบบที่อธิบายยาก"
+        },
+        tint: "#1a1a2e",
+        tintOpacity: 0.45,
+        mood: "heavy",
+        archetypeHint: "The Nurturer",
+        styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
+        dimensions: { selfWorth: -1, motivation: -2, pattern: -2 }
       },
       {
         id: "mirror-deflect",
         text: {
-          EN: "\"It's nothing. Don't worry about it.\"",
-          TH: "\"ไม่เป็นไรหรอก อย่าคิดมาก\""
+          EN: "Like no one really sees me today.",
+          TH: "รู้สึกเหมือนวันนี้ไม่มีใครมองเห็นเราจริงๆ"
         },
+        internalNote: {
+          EN: "You were there all day. People looked through you, not at you.",
+          TH: "คุณอยู่ตรงนั้นทั้งวัน แต่คนมองผ่าน ไม่ได้มองที่คุณ"
+        },
+        tint: "#2d1b4e",
+        tintOpacity: 0.5,
+        mood: "lonely",
         archetypeHint: "The Builder",
         styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
         dimensions: { selfWorth: 0, motivation: -1, pattern: -1 }
@@ -106,22 +131,19 @@ export const PHASE_1_SCENES = [
       {
         id: "mirror-honest-needs",
         text: {
-          EN: "\"Honestly? Sit with me. No questions for now.\"",
-          TH: "\"จริงๆ แค่อยากให้นั่งอยู่ข้างๆ ก่อน ยังไม่ต้องถามอะไร\""
+          EN: "Nothing. I can't feel anything right now.",
+          TH: "ไม่มีอะไร รู้สึกชาอยู่"
         },
-        archetypeHint: "The Anchor",
-        styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
-        dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
-      },
-      {
-        id: "mirror-freeze",
-        text: {
-          EN: "You freeze, stay silent, and wait for them to lead everything.",
-          TH: "ชะงัก เงียบ และปล่อยให้อีกฝ่ายนำทุกอย่างไปก่อน"
+        internalNote: {
+          EN: "Sometimes the hardest thing to sit with is the absence of feeling.",
+          TH: "บางทีสิ่งที่อยู่ด้วยยากที่สุด คือความว่างเปล่าที่ไม่รู้สึกอะไรเลย"
         },
-        archetypeHint: "The Nurturer",
-        styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
-        dimensions: { selfWorth: -1, motivation: -2, pattern: -2 }
+        tint: "#1c2b1c",
+        tintOpacity: 0.4,
+        mood: "numb",
+        archetypeHint: "The Seeker",
+        styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
+        dimensions: { selfWorth: -2, motivation: -1, pattern: -2 }
       }
     ]
   },

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="tintOverlay" class="tint-overlay" aria-hidden="true"></div>
   <button type="button" id="langToggleBtn" class="lang-toggle-btn" aria-label="Switch language">
     ไทย
   </button>
@@ -30,6 +31,8 @@
 
       <h2 id="sceneTitle" class="panel__title"></h2>
       <p id="sceneDescription" class="panel__description"></p>
+      <p id="sceneChoicePrompt" class="scene-choice-prompt"></p>
+      <p id="moodIndicator" class="mood-indicator" aria-live="polite"></p>
 
       <div id="phase2Meta" class="phase2-meta" hidden>
         <p id="phase2TurnLabel" class="phase2-turn"></p>
@@ -49,6 +52,7 @@
       </div>
 
       <p id="resultText" class="result-text"></p>
+      <p id="internalNote" class="internal-note" hidden></p>
       <div class="action-row">
         <button id="restartButton" class="secondary-btn" type="button" hidden>Restart Scene 1</button>
         <button id="resetUiPrefsButton" class="secondary-btn secondary-btn--subtle" type="button" hidden>

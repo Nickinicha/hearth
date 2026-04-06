@@ -21,6 +21,16 @@ body {
   line-height: 1.5;
 }
 
+.tint-overlay {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: background-color 0.9s ease, opacity 0.9s ease;
+}
+
 .lang-toggle-btn {
   position: fixed;
   top: 14px;
@@ -54,6 +64,8 @@ body {
   max-width: 860px;
   margin: 0 auto;
   padding: 56px 20px 72px;
+  position: relative;
+  z-index: 2;
 }
 
 .hero {
@@ -112,6 +124,19 @@ body {
 .panel__description {
   margin-top: 0;
   color: var(--muted);
+}
+
+.scene-choice-prompt {
+  margin: 10px 0 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.mood-indicator {
+  margin: 6px 0 0;
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .phase2-meta {
@@ -340,6 +365,12 @@ body {
   font-weight: 600;
 }
 
+.internal-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .action-row {
   display: flex;
   gap: 8px;
@@ -363,16 +394,12 @@ body {
 }
 
 @media (max-width: 640px) {
-<<<<<<< HEAD
   .lang-toggle-btn {
     top: 10px;
     right: 10px;
     padding: 7px 12px;
     font-size: 0.85rem;
   }
-
-=======
->>>>>>> 884285805ef3403645f0b75a14700e125d80ddf8
   .app-shell {
     padding: 20px 12px 36px;
   }

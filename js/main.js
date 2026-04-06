@@ -166,6 +166,10 @@ const phase2TurnLabel = document.querySelector("#phase2TurnLabel");
 const phase2ProgressFill = document.querySelector("#phase2ProgressFill");
 const phase2ProgressText = document.querySelector("#phase2ProgressText");
 const langToggleBtn = document.querySelector("#langToggleBtn");
+const tintOverlay = document.querySelector("#tintOverlay");
+const moodIndicator = document.querySelector("#moodIndicator");
+const sceneChoicePrompt = document.querySelector("#sceneChoicePrompt");
+const internalNote = document.querySelector("#internalNote");
 const heroTitleEl = document.querySelector(".hero__title");
 const heroSubtitleEl = document.querySelector(".hero__subtitle");
 const statusCardTitleEl = document.querySelector(".status-card h3");
@@ -206,6 +210,51 @@ function applyShellI18n() {
   if (langToggleBtn) {
     langToggleBtn.textContent = getLang() === "EN" ? "ไทย" : "English";
   }
+}
+
+function applySceneTint(tintColor, opacity = 0) {
+  if (!tintOverlay) {
+    return;
+  }
+  if (!tintColor) {
+    tintOverlay.style.opacity = "0";
+    return;
+  }
+  tintOverlay.style.backgroundColor = tintColor;
+  tintOverlay.style.opacity = `${opacity}`;
+}
+
+function updateMoodIndicator(moodValue) {
+  if (!moodIndicator) {
+    return;
+  }
+  const moodMap = {
+    neutral: "",
+    heavy: "🌑",
+    lonely: "🌘",
+    numb: "🌿",
+    withdrawn: "🌑",
+    open: "🌒",
+    reaching: "🌓",
+    warm: "🌕",
+    still: "🍃",
+    peaceful: "☀️",
+    moving: "🌱"
+  };
+  moodIndicator.textContent = moodMap[moodValue] ?? "";
+}
+
+function showInternalNote(noteObj) {
+  if (!internalNote) {
+    return;
+  }
+  if (!noteObj) {
+    internalNote.hidden = true;
+    internalNote.textContent = "";
+    return;
+  }
+  internalNote.hidden = false;
+  internalNote.textContent = t(noteObj);
 }
 
 function refreshCurrentView() {
@@ -779,6 +828,9 @@ function handleChoice(choice) {
   const chapter = getPhaseOneChapterForScene(currentSceneIndex);
   const dimensionWeights = getDimensionWeightsForChapter(chapter);
   engine.applyChoice(choice, { dimensionWeights });
+  applySceneTint(choice.tint ?? chapter?.backgroundTint ?? null, choice.tintOpacity ?? chapter?.tintOpacity ?? 0);
+  updateMoodIndicator(choice.mood ?? chapter?.mood ?? "neutral");
+  showInternalNote(choice.internalNote);
   renderStatus();
   choiceContainer.innerHTML = "";
   restartButton.hidden = true;
@@ -806,6 +858,12 @@ function renderScene(scene) {
   sceneLabel.textContent = t(scene.sceneLabel);
   sceneTitle.textContent = t(scene.title);
   sceneDescription.textContent = t(scene.description);
+  if (sceneChoicePrompt) {
+    sceneChoicePrompt.textContent = scene.choicePrompt ? t(scene.choicePrompt) : "";
+  }
+  showInternalNote(null);
+  applySceneTint(scene.backgroundTint ?? null, scene.tintOpacity ?? 0);
+  updateMoodIndicator(scene.mood ?? "neutral");
   resultText.textContent = "";
   restartButton.hidden = true;
 
