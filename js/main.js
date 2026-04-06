@@ -167,6 +167,8 @@ const phase2TurnLabel = document.querySelector("#phase2TurnLabel");
 const phase2ProgressFill = document.querySelector("#phase2ProgressFill");
 const phase2ProgressText = document.querySelector("#phase2ProgressText");
 const langToggleBtn = document.querySelector("#langToggleBtn");
+const starfieldCanvas = document.querySelector("#starfieldCanvas");
+const constellationCanvas = document.querySelector("#constellationCanvas");
 const tintOverlay = document.querySelector("#tintOverlay");
 const moodIndicator = document.querySelector("#moodIndicator");
 const sceneChoicePrompt = document.querySelector("#sceneChoicePrompt");
@@ -175,6 +177,12 @@ const heroTitleEl = document.querySelector(".hero__title");
 const heroSubtitleEl = document.querySelector(".hero__subtitle");
 const statusCardTitleEl = document.querySelector(".status-card h3");
 const progressWrapEl = document.querySelector(".progress-wrap");
+
+let starfieldCtx = null;
+let constellationCtx = null;
+let starfieldStars = [];
+let starfieldRafId = null;
+let constellationFlashTimer = null;
 
 function toDisplayName(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -253,6 +261,130 @@ function replayGalaxyTransition(...elements) {
     void el.offsetWidth;
     el.classList.add("galaxy-transition");
   });
+}
+
+function initStarfield() {
+  if (!starfieldCanvas || !constellationCanvas) {
+    return;
+  }
+  starfieldCtx = starfieldCanvas.getContext("2d");
+  constellationCtx = constellationCanvas.getContext("2d");
+  if (!starfieldCtx || !constellationCtx) {
+    return;
+  }
+  resizeSkyCanvases();
+  buildStars();
+  if (starfieldRafId) {
+    cancelAnimationFrame(starfieldRafId);
+  }
+  animateStarfield();
+  window.addEventListener("resize", () => {
+    resizeSkyCanvases();
+    buildStars();
+  });
+}
+
+function resizeSkyCanvases() {
+  if (!starfieldCanvas || !constellationCanvas) {
+    return;
+  }
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(window.innerWidth * dpr);
+  const h = Math.floor(window.innerHeight * dpr);
+  starfieldCanvas.width = w;
+  starfieldCanvas.height = h;
+  constellationCanvas.width = w;
+  constellationCanvas.height = h;
+  if (starfieldCtx) {
+    starfieldCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  if (constellationCtx) {
+    constellationCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+}
+
+function buildStars() {
+  const targetCount = Math.max(45, Math.floor((window.innerWidth * window.innerHeight) / 18000));
+  starfieldStars = Array.from({ length: targetCount }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: 0.35 + Math.random() * 1.35,
+    a: 0.15 + Math.random() * 0.45,
+    vy: 0.01 + Math.random() * 0.06,
+    vx: (Math.random() - 0.5) * 0.02,
+    twinkle: Math.random() * Math.PI * 2
+  }));
+}
+
+function animateStarfield() {
+  if (!starfieldCtx) {
+    return;
+  }
+  starfieldCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+  for (const star of starfieldStars) {
+    star.x += star.vx;
+    star.y += star.vy;
+    star.twinkle += 0.01;
+
+    if (star.y > window.innerHeight + 2) star.y = -2;
+    if (star.x > window.innerWidth + 2) star.x = -2;
+    if (star.x < -2) star.x = window.innerWidth + 2;
+
+    const twinkleAlpha = Math.max(0.07, Math.min(0.75, star.a + Math.sin(star.twinkle) * 0.08));
+    starfieldCtx.beginPath();
+    starfieldCtx.fillStyle = `rgba(255, 247, 223, ${twinkleAlpha})`;
+    starfieldCtx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    starfieldCtx.fill();
+  }
+
+  starfieldRafId = requestAnimationFrame(animateStarfield);
+}
+
+function triggerConstellationFlash() {
+  if (!constellationCtx || !constellationCanvas) {
+    return;
+  }
+  if (constellationFlashTimer) {
+    clearTimeout(constellationFlashTimer);
+  }
+  const points = [];
+  const count = 5 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < count; i += 1) {
+    points.push({
+      x: window.innerWidth * (0.2 + Math.random() * 0.6),
+      y: window.innerHeight * (0.15 + Math.random() * 0.7)
+    });
+  }
+  points.sort((a, b) => a.x - b.x);
+
+  constellationCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  constellationCtx.beginPath();
+  constellationCtx.strokeStyle = "rgba(219, 205, 255, 0.42)";
+  constellationCtx.lineWidth = 1.1;
+  constellationCtx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i += 1) {
+    constellationCtx.lineTo(points[i].x, points[i].y);
+  }
+  constellationCtx.stroke();
+
+  points.forEach((pt) => {
+    constellationCtx.beginPath();
+    constellationCtx.fillStyle = "rgba(255, 250, 236, 0.62)";
+    constellationCtx.arc(pt.x, pt.y, 1.9, 0, Math.PI * 2);
+    constellationCtx.fill();
+  });
+
+  constellationCanvas.style.opacity = "0.5";
+  constellationCanvas.style.transition = "opacity 700ms ease";
+  constellationFlashTimer = window.setTimeout(() => {
+    constellationCanvas.style.opacity = "0";
+    window.setTimeout(() => {
+      if (constellationCtx) {
+        constellationCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+    }, 700);
+  }, 140);
 }
 
 function showInternalNote(noteObj) {
@@ -860,6 +992,7 @@ function handleChoice(choice) {
     return;
   }
   isPhaseOneTransitioning = true;
+  triggerConstellationFlash();
   const chapter = getPhaseOneChapterForScene(currentSceneIndex);
   const dimensionWeights = getDimensionWeightsForChapter(chapter);
   engine.applyChoice(normalizeChoiceForEngine(choice), { dimensionWeights });
@@ -1610,6 +1743,7 @@ resetUiPrefsButton.addEventListener("click", () => {
 
 async function bootstrap() {
   await loadContentModels();
+  initStarfield();
   if (langToggleBtn) {
     langToggleBtn.addEventListener("click", () => {
       toggleLang();
