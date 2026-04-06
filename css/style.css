@@ -359,6 +359,70 @@ body {
   transform: translateY(-1px);
 }
 
+.orb-wrapper {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.orb-wrapper.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.orb-choice {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.24), rgba(255,255,255,0.04) 48%, transparent 72%);
+  animation: orbPulseSoft 3.2s ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(200, 169, 110, 0.2);
+}
+
+.orb-choice .orb-core {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 247, 223, 0.55);
+  box-shadow: 0 0 16px rgba(255, 247, 223, 0.45);
+}
+
+.orb-choice[data-style="secure"] { box-shadow: 0 0 20px rgba(200, 169, 110, 0.35); }
+.orb-choice[data-style="anxious"] { box-shadow: 0 0 20px rgba(155, 127, 199, 0.38); }
+.orb-choice[data-style="avoidant"] { box-shadow: 0 0 20px rgba(122, 158, 126, 0.35); }
+.orb-choice[data-style="fearful"] { box-shadow: 0 0 20px rgba(115, 119, 168, 0.34); }
+
+.orb-choice:hover {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.orb-label {
+  max-width: 180px;
+  text-align: center;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+@keyframes orbPulseSoft {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.04);
+    filter: brightness(1.14);
+  }
+}
+
 .status-card {
   margin-top: 24px;
   border-top: 1px solid var(--line);

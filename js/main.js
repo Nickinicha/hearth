@@ -183,6 +183,12 @@ let constellationCtx = null;
 let starfieldStars = [];
 let starfieldRafId = null;
 let constellationFlashTimer = null;
+let starfieldSpeedMultiplier = 1;
+let starfieldTargetSpeedMultiplier = 1;
+let starfieldGlowBoost = 1;
+let starfieldTargetGlowBoost = 1;
+let textTypeTimer = null;
+let audioCtx = null;
 
 function toDisplayName(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -264,6 +270,87 @@ function replayGalaxyTransition(...elements) {
   });
 }
 
+function stopTypewriter() {
+  if (textTypeTimer) {
+    clearInterval(textTypeTimer);
+    textTypeTimer = null;
+  }
+}
+
+function typeTextWordByWord(targetEl, text, options = {}) {
+  const words = String(text ?? "").split(/\s+/).filter(Boolean);
+  const intervalMs = options.intervalMs ?? 45;
+  targetEl.textContent = "";
+  if (words.length === 0) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    let i = 0;
+    stopTypewriter();
+    textTypeTimer = window.setInterval(() => {
+      i += 1;
+      targetEl.textContent = words.slice(0, i).join(" ");
+      if (i >= words.length) {
+        stopTypewriter();
+        resolve();
+      }
+    }, intervalMs);
+  });
+}
+
+function initAudio() {
+  if (audioCtx) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  audioCtx = new AudioContextClass();
+}
+
+function ensureAudioResumed() {
+  if (!audioCtx) return;
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+}
+
+function playPing(style = "neutral") {
+  if (!audioCtx) return;
+  ensureAudioResumed();
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const base = style === "anxious" ? 420 : style === "secure" ? 250 : style === "avoidant" ? 180 : 300;
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(base, now);
+  osc.frequency.exponentialRampToValueAtTime(base * 0.55, now + 0.8);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.08, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.9);
+}
+
+function playWindChime() {
+  if (!audioCtx) return;
+  ensureAudioResumed();
+  const freqs = [523.25, 659.25, 783.99];
+  freqs.forEach((freq, idx) => {
+    const start = audioCtx.currentTime + idx * 0.08;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.linearRampToValueAtTime(0.05, start + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(start);
+    osc.stop(start + 1.25);
+  });
+}
+
 function initStarfield() {
   if (!starfieldCanvas || !constellationCanvas) {
     return;
@@ -323,16 +410,22 @@ function animateStarfield() {
   }
   starfieldCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
+  starfieldSpeedMultiplier += (starfieldTargetSpeedMultiplier - starfieldSpeedMultiplier) * 0.06;
+  starfieldGlowBoost += (starfieldTargetGlowBoost - starfieldGlowBoost) * 0.06;
+
   for (const star of starfieldStars) {
-    star.x += star.vx;
-    star.y += star.vy;
+    star.x += star.vx * starfieldSpeedMultiplier;
+    star.y += star.vy * starfieldSpeedMultiplier;
     star.twinkle += 0.01;
 
     if (star.y > window.innerHeight + 2) star.y = -2;
     if (star.x > window.innerWidth + 2) star.x = -2;
     if (star.x < -2) star.x = window.innerWidth + 2;
 
-    const twinkleAlpha = Math.max(0.07, Math.min(0.75, star.a + Math.sin(star.twinkle) * 0.08));
+    const twinkleAlpha = Math.max(
+      0.07,
+      Math.min(0.9, (star.a + Math.sin(star.twinkle) * 0.08) * starfieldGlowBoost)
+    );
     starfieldCtx.beginPath();
     starfieldCtx.fillStyle = `rgba(255, 247, 223, ${twinkleAlpha})`;
     starfieldCtx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
@@ -340,6 +433,21 @@ function animateStarfield() {
   }
 
   starfieldRafId = requestAnimationFrame(animateStarfield);
+}
+
+function getHoverProfile(choice) {
+  const scoreMap = choice.styleImpact ?? getAttachmentStyleFromEffects(choice.effects ?? {});
+  const bestStyle = ATTACHMENT_STYLES.reduce((best, key) => {
+    const bestValue = scoreMap[best] ?? Number.NEGATIVE_INFINITY;
+    const currentValue = scoreMap[key] ?? Number.NEGATIVE_INFINITY;
+    return currentValue > bestValue ? key : best;
+  }, ATTACHMENT_STYLES[0]);
+
+  if (bestStyle === "anxious") return { speed: 2.2, glow: 1.15 };
+  if (bestStyle === "secure") return { speed: 0.8, glow: 1.55 };
+  if (bestStyle === "avoidant") return { speed: 0.6, glow: 0.95 };
+  if (bestStyle === "fearful") return { speed: 1.6, glow: 1.25 };
+  return { speed: 1, glow: 1 };
 }
 
 function triggerConstellationFlash() {
@@ -1055,6 +1163,8 @@ function handleChoice(choice) {
     return;
   }
   isPhaseOneTransitioning = true;
+  playPing((choice.styleImpact && Object.keys(choice.styleImpact).find((k) => choice.styleImpact[k] > 0)) || "neutral");
+  playWindChime();
   triggerConstellationFlash();
   const chapter = getPhaseOneChapterForScene(currentSceneIndex);
   const dimensionWeights = getDimensionWeightsForChapter(chapter);
@@ -1105,7 +1215,7 @@ function renderScene(scene) {
   phaseLabel.textContent = t(scene.phaseLabel);
   sceneLabel.textContent = t(scene.sceneLabel);
   sceneTitle.textContent = t(scene.title);
-  sceneDescription.textContent = t(scene.description);
+  sceneDescription.textContent = "";
   if (sceneChoicePrompt) {
     sceneChoicePrompt.textContent = scene.choicePrompt ? t(scene.choicePrompt) : "";
   }
@@ -1117,13 +1227,46 @@ function renderScene(scene) {
   replayGalaxyTransition(sceneTitle, sceneDescription, sceneChoicePrompt, resultText, moodIndicator);
 
   choiceContainer.innerHTML = "";
-  scene.choices.forEach((choice) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "choice-btn";
-    button.textContent = t(choice.text);
-    button.addEventListener("click", () => handleChoice(choice));
-    choiceContainer.appendChild(button);
+  choiceContainer.style.opacity = "0";
+  typeTextWordByWord(sceneDescription, t(scene.description), { intervalMs: 32 }).then(() => {
+    scene.choices.forEach((choice, index) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "orb-wrapper";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "choice-btn orb-choice";
+      button.dataset.style = (choice.styleImpact && Object.keys(choice.styleImpact).sort((a, b) => (choice.styleImpact[b] ?? 0) - (choice.styleImpact[a] ?? 0))[0]) || "neutral";
+      button.setAttribute("aria-label", t(choice.text));
+
+      const orbCore = document.createElement("span");
+      orbCore.className = "orb-core";
+      button.appendChild(orbCore);
+
+      const label = document.createElement("p");
+      label.className = "orb-label";
+      label.textContent = t(choice.text);
+
+      wrapper.appendChild(button);
+      wrapper.appendChild(label);
+      choiceContainer.appendChild(wrapper);
+
+      const profile = getHoverProfile(choice);
+      wrapper.addEventListener("mouseenter", () => {
+        starfieldTargetSpeedMultiplier = profile.speed;
+        starfieldTargetGlowBoost = profile.glow;
+      });
+      wrapper.addEventListener("mouseleave", () => {
+        starfieldTargetSpeedMultiplier = 1;
+        starfieldTargetGlowBoost = 1;
+      });
+      button.addEventListener("click", () => handleChoice(choice));
+
+      window.setTimeout(() => {
+        wrapper.classList.add("revealed");
+      }, 40 * index);
+    });
+    choiceContainer.style.opacity = "1";
   });
 
   renderStatus();
@@ -1850,6 +1993,7 @@ resetUiPrefsButton.addEventListener("click", () => {
 
 async function bootstrap() {
   await loadContentModels();
+  initAudio();
   initStarfield();
   if (langToggleBtn) {
     langToggleBtn.addEventListener("click", () => {
