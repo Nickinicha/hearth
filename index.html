@@ -10,9 +10,13 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="cursorTrail" aria-hidden="true"></div>
   <canvas id="starfieldCanvas" class="starfield-canvas" aria-hidden="true"></canvas>
   <canvas id="constellationCanvas" class="constellation-canvas" aria-hidden="true"></canvas>
   <div id="tintOverlay" class="tint-overlay" aria-hidden="true"></div>
+  <div id="sceneTransition" class="scene-transition" aria-hidden="true"></div>
+  <p id="chapterLabel" class="chapter-label" aria-live="polite"></p>
   <button type="button" id="langToggleBtn" class="lang-toggle-btn" aria-label="Switch language">
     ไทย
   </button>
@@ -63,6 +67,11 @@
       </div>
     </section>
   </main>
+  <section id="breathScene" class="breath-scene" aria-live="polite" hidden>
+    <div id="breathOrb" class="breath-orb"></div>
+    <p id="breathInstruction" class="breath-instruction"></p>
+    <button id="breathContinueBtn" class="secondary-btn" type="button"></button>
+  </section>
   <noscript>
     <div style="margin:16px;padding:12px;border:1px solid #d9ccb5;border-radius:8px;background:#fffdf8;color:#1f1d1b;font-family:Inter,sans-serif;">
       JavaScript is disabled. This app requires JavaScript to render the UI.

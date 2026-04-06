@@ -175,8 +175,8 @@ export const PHASE_1_SCENES = [
     mood: "moving",
     speaker: { EN: null, TH: null },
     description: {
-      EN: "Some patterns ask to be honored before they are released. You place yours on the night wind and watch them drift.",
-      TH: "บางรูปแบบต้องได้รับการยอมรับ ก่อนจะถูกปล่อยวาง คุณวางมันลงบนลมยามค่ำ แล้วมองดูมันค่อยๆ ลอยห่าง"
+      EN: "Some patterns must be honored before release. You place yours on the night wind and watch them drift.",
+      TH: "บางรูปแบบต้องได้รับการยอมรับก่อนปล่อยวาง คุณวางมันลงบนลมยามค่ำ แล้วมองดูค่อยๆ ลอยห่าง"
     },
     choicePrompt: {
       EN: "What orbit do you choose next?",

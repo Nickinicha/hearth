@@ -33,6 +33,119 @@ const CINEMATIC_SCENE_TRANSITION_MS = 900;
 const CINEMATIC_TYPEWORD_MS = 34;
 const CINEMATIC_ORB_STAGGER_MS = 70;
 const CINEMATIC_CONSTELLATION_FADE_MS = 700;
+const SCENE_WHISPER_THEME_BY_MOOD = {
+  neutral: "balanced",
+  lonely: "tender",
+  heavy: "grounding",
+  still: "grounding",
+  warm: "warm",
+  cosmic: "cosmic",
+  reaching: "aspire",
+  moving: "release"
+};
+const ORB_WHISPERS_BY_STYLE = {
+  secure: [
+    {
+      text: {
+        EN: "A steady star hums: you can stay open and still stay whole.",
+        TH: "ดาวที่มั่นคงฮัมเบาๆ: คุณเปิดใจได้โดยไม่สูญเสียความเป็นตัวเอง"
+      },
+      themes: ["grounding", "balanced"]
+    },
+    {
+      text: {
+        EN: "The sky nods: warmth and boundaries can walk together.",
+        TH: "ท้องฟ้าพยักหน้า: ความอบอุ่นกับขอบเขตเดินไปด้วยกันได้"
+      },
+      themes: ["warm", "balanced"]
+    },
+    {
+      text: {
+        EN: "A calm orbit forms where honesty and care meet.",
+        TH: "วงโคจรสงบเกิดขึ้นตรงจุดที่ความจริงใจพบกับความใส่ใจ"
+      },
+      themes: ["cosmic", "balanced"]
+    }
+  ],
+  anxious: [
+    {
+      text: {
+        EN: "A bright pulse whispers: breathe first, then choose from your center.",
+        TH: "ชีพจรแห่งแสงกระซิบ: หายใจก่อน แล้วเลือกจากแก่นใจของคุณ"
+      },
+      themes: ["grounding", "tender"]
+    },
+    {
+      text: {
+        EN: "The constellation flickers: longing is valid, and so is patience.",
+        TH: "กลุ่มดาวสั่นระยับ: ความโหยหามีคุณค่า และความใจเย็นก็มีคุณค่าเช่นกัน"
+      },
+      themes: ["tender", "cosmic"]
+    },
+    {
+      text: {
+        EN: "A quick meteor says: closeness grows best without chasing.",
+        TH: "ดาวตกฉับไวบอกว่า: ความใกล้ชิดเติบโตงดงามที่สุดเมื่อไม่ไล่ตาม"
+      },
+      themes: ["aspire", "release"]
+    }
+  ],
+  avoidant: [
+    {
+      text: {
+        EN: "A distant comet murmurs: distance can soften, one small opening at a time.",
+        TH: "ดาวหางไกลโพ้นพึมพำ: ระยะห่างค่อยๆ อ่อนลงได้ ผ่านการเปิดใจทีละนิด"
+      },
+      themes: ["tender", "release"]
+    },
+    {
+      text: {
+        EN: "The night wind says: autonomy and connection are not opposites.",
+        TH: "ลมราตรีบอกว่า: ความเป็นตัวเองกับความผูกพันไม่จำเป็นต้องสวนทางกัน"
+      },
+      themes: ["balanced", "grounding"]
+    },
+    {
+      text: {
+        EN: "A quiet star glows: sharing a feeling is still self-honoring.",
+        TH: "ดาวเงียบดวงหนึ่งเรืองแสง: การแบ่งปันความรู้สึกยังคงเคารพตัวเองได้"
+      },
+      themes: ["warm", "tender"]
+    }
+  ],
+  fearful: [
+    {
+      text: {
+        EN: "A twilight nebula whispers: caution can coexist with hope.",
+        TH: "เนบิวลาพลบค่ำกระซิบ: ความระวังตัวอยู่ร่วมกับความหวังได้"
+      },
+      themes: ["tender", "cosmic"]
+    },
+    {
+      text: {
+        EN: "The skyline breathes: one safe step can retrain old alarms.",
+        TH: "ขอบฟ้าหายใจช้าๆ: ก้าวที่ปลอดภัยหนึ่งก้าวฝึกสัญญาณเตือนเก่าให้ใหม่ได้"
+      },
+      themes: ["grounding", "aspire"]
+    },
+    {
+      text: {
+        EN: "A silver arc says: protect your heart without locking it away.",
+        TH: "เสี้ยวแสงสีเงินบอกว่า: ปกป้องหัวใจได้โดยไม่ต้องขังมันไว้"
+      },
+      themes: ["release", "balanced"]
+    }
+  ],
+  neutral: [
+    {
+      text: {
+        EN: "A quiet constellation whispers: choose what feels true.",
+        TH: "กลุ่มดาวกระซิบเบาๆ: เลือกสิ่งที่จริงกับหัวใจคุณ"
+      },
+      themes: ["balanced", "cosmic"]
+    }
+  ]
+};
 const DEFAULT_WORLD_MAP = { chapters: [] };
 const DEFAULT_SYSTEMS = {
   dimensionWeightsByFocus: {
@@ -180,6 +293,14 @@ const heroTitleEl = document.querySelector(".hero__title");
 const heroSubtitleEl = document.querySelector(".hero__subtitle");
 const statusCardTitleEl = document.querySelector(".status-card h3");
 const progressWrapEl = document.querySelector(".progress-wrap");
+const chapterLabel = document.querySelector("#chapterLabel");
+const sceneTransition = document.querySelector("#sceneTransition");
+const breathScene = document.querySelector("#breathScene");
+const breathOrb = document.querySelector("#breathOrb");
+const breathInstruction = document.querySelector("#breathInstruction");
+const breathContinueBtn = document.querySelector("#breathContinueBtn");
+const cursor = document.querySelector("#cursor");
+const cursorTrail = document.querySelector("#cursorTrail");
 
 let starfieldCtx = null;
 let constellationCtx = null;
@@ -192,6 +313,10 @@ let starfieldGlowBoost = 1;
 let starfieldTargetGlowBoost = 1;
 let textTypeTimer = null;
 let audioCtx = null;
+let breathStepTimer = null;
+let parallaxRafId = null;
+let parallaxMouseX = 0;
+let parallaxMouseY = 0;
 
 function toDisplayName(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -227,6 +352,9 @@ function applyShellI18n() {
   }
   if (langToggleBtn) {
     langToggleBtn.textContent = getLang() === "EN" ? "ไทย" : "English";
+  }
+  if (breathContinueBtn) {
+    breathContinueBtn.textContent = t({ EN: "Continue", TH: "ไปต่อ" });
   }
 }
 
@@ -273,6 +401,20 @@ function replayGalaxyTransition(...elements) {
   });
 }
 
+function withSceneTransition(callback) {
+  if (!sceneTransition) {
+    callback();
+    return;
+  }
+  sceneTransition.classList.add("fade-in");
+  window.setTimeout(() => {
+    callback();
+    window.setTimeout(() => {
+      sceneTransition.classList.remove("fade-in");
+    }, 70);
+  }, 340);
+}
+
 function stopTypewriter() {
   if (textTypeTimer) {
     clearInterval(textTypeTimer);
@@ -282,7 +424,7 @@ function stopTypewriter() {
 
 function typeTextWordByWord(targetEl, text, options = {}) {
   const words = String(text ?? "").split(/\s+/).filter(Boolean);
-  const intervalMs = options.intervalMs ?? CINEMATIC_TYPEWORD_MS;
+  const intervalMs = options.intervalMs ?? (window.innerWidth <= 640 ? 30 : CINEMATIC_TYPEWORD_MS);
   targetEl.textContent = "";
   if (words.length === 0) {
     return Promise.resolve();
@@ -352,6 +494,68 @@ function playWindChime() {
     osc.start(start);
     osc.stop(start + 1.25);
   });
+}
+
+function initCustomCursor() {
+  if (!cursor || !cursorTrail) {
+    return;
+  }
+  if (window.matchMedia("(pointer: coarse)").matches) {
+    cursor.style.display = "none";
+    cursorTrail.style.display = "none";
+    document.body.classList.add("touch-mode");
+    return;
+  }
+  let trailX = window.innerWidth / 2;
+  let trailY = window.innerHeight / 2;
+  window.addEventListener("mousemove", (event) => {
+    const { clientX, clientY } = event;
+    cursor.style.left = `${clientX}px`;
+    cursor.style.top = `${clientY}px`;
+    trailX += (clientX - trailX) * 0.16;
+    trailY += (clientY - trailY) * 0.16;
+    cursorTrail.style.left = `${trailX}px`;
+    cursorTrail.style.top = `${trailY}px`;
+  });
+}
+
+function bindCursorHover(el) {
+  if (!el || !cursor) return;
+  if (window.matchMedia("(pointer: coarse)").matches) return;
+  el.addEventListener("mouseenter", () => cursor.classList.add("is-hovering"));
+  el.addEventListener("mouseleave", () => cursor.classList.remove("is-hovering"));
+}
+
+function initParallaxMotion() {
+  if (window.matchMedia("(pointer: coarse)").matches) {
+    return;
+  }
+  const update = () => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (parallaxMouseX - cx) / Math.max(cx, 1);
+    const dy = (parallaxMouseY - cy) / Math.max(cy, 1);
+
+    if (chapterLabel) {
+      chapterLabel.style.transform = `translateX(calc(-50% + ${dx * 8}px)) translateY(${dy * 2}px)`;
+    }
+    if (sceneTitle) {
+      sceneTitle.style.transform = `translate3d(${dx * 5}px, ${dy * 3}px, 0)`;
+    }
+    if (heroTitleEl) {
+      heroTitleEl.style.transform = `translate3d(${dx * 4}px, ${dy * 2}px, 0)`;
+    }
+    parallaxRafId = requestAnimationFrame(update);
+  };
+
+  window.addEventListener("mousemove", (event) => {
+    parallaxMouseX = event.clientX;
+    parallaxMouseY = event.clientY;
+  });
+  parallaxMouseX = window.innerWidth / 2;
+  parallaxMouseY = window.innerHeight / 2;
+  if (parallaxRafId) cancelAnimationFrame(parallaxRafId);
+  parallaxRafId = requestAnimationFrame(update);
 }
 
 function initStarfield() {
@@ -451,6 +655,72 @@ function getHoverProfile(choice) {
   if (bestStyle === "avoidant") return { speed: 0.6, glow: 0.95 };
   if (bestStyle === "fearful") return { speed: 1.6, glow: 1.25 };
   return { speed: 1, glow: 1 };
+}
+
+function getDominantStyleFromChoice(choice) {
+  const scoreMap = choice.styleImpact ?? getAttachmentStyleFromEffects(choice.effects ?? {});
+  return ATTACHMENT_STYLES.reduce((best, key) => {
+    const bestValue = scoreMap[best] ?? Number.NEGATIVE_INFINITY;
+    const currentValue = scoreMap[key] ?? Number.NEGATIVE_INFINITY;
+    return currentValue > bestValue ? key : best;
+  }, ATTACHMENT_STYLES[0]);
+}
+
+function hashSeedToInt(seedText) {
+  let hash = 0;
+  for (let i = 0; i < seedText.length; i += 1) {
+    hash = ((hash << 5) - hash + seedText.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function scoreWhisperByTheme(whisper, targetTheme) {
+  if (!targetTheme) return 0;
+  const themes = whisper?.themes ?? [];
+  if (themes.includes(targetTheme)) return 2;
+  if (targetTheme === "balanced" && themes.length > 0) return 1;
+  return 0;
+}
+
+function getOrbWhisper(choice, sceneId = "scene", choiceIndex = 0, sceneUsageByStyle = null, sceneMood = "neutral") {
+  if (choice.internalNote) {
+    return choice.internalNote;
+  }
+  const style = getDominantStyleFromChoice(choice);
+  const pool = ORB_WHISPERS_BY_STYLE[style] ?? ORB_WHISPERS_BY_STYLE.neutral;
+  if (!pool.length) {
+    return ORB_WHISPERS_BY_STYLE.neutral[0];
+  }
+
+  const textSeed = typeof choice.text === "object"
+    ? `${choice.text.EN ?? ""}|${choice.text.TH ?? ""}`
+    : String(choice.text ?? "");
+  const seed = `${sceneId}|${style}|${choiceIndex}|${textSeed}`;
+  const baseIndex = hashSeedToInt(seed) % pool.length;
+  const targetTheme = SCENE_WHISPER_THEME_BY_MOOD[sceneMood] ?? "balanced";
+
+  const rankedIndexes = pool
+    .map((entry, index) => ({
+      index,
+      weight: scoreWhisperByTheme(entry, targetTheme),
+      tie: (hashSeedToInt(`${seed}|${index}`) % 1000)
+    }))
+    .sort((a, b) => b.weight - a.weight || a.tie - b.tie)
+    .map((entry) => entry.index);
+
+  if (!sceneUsageByStyle) {
+    return pool[rankedIndexes[0] ?? baseIndex];
+  }
+
+  const used = sceneUsageByStyle[style] ?? new Set();
+  for (const candidateIndex of rankedIndexes) {
+    if (!used.has(candidateIndex)) {
+      used.add(candidateIndex);
+      sceneUsageByStyle[style] = used;
+      return pool[candidateIndex];
+    }
+  }
+  return pool[baseIndex];
 }
 
 function triggerConstellationFlash() {
@@ -554,58 +824,90 @@ function renderBreathingScene(scene) {
   viewMode = "breathing";
   updateUiPreferenceButtonVisibility();
   hidePhaseTwoMeta();
-  phaseLabel.textContent = t(scene.phaseLabel ?? { EN: "Interlude", TH: "ช่วงพักใจ" });
-  sceneLabel.textContent = t(scene.sceneLabel ?? { EN: "Breathing", TH: "หายใจ" });
-  sceneTitle.textContent = t(scene.title ?? { EN: "Breathing Space", TH: "พักหายใจ" });
-  sceneDescription.textContent = t(scene.description);
-  if (sceneChoicePrompt) {
-    sceneChoicePrompt.textContent = "";
+  appShellToggleBreathing(true);
+  if (chapterLabel) {
+    chapterLabel.textContent = "";
+    chapterLabel.classList.remove("visible");
   }
+  phaseLabel.textContent = "";
+  sceneLabel.textContent = "";
+  sceneTitle.textContent = "";
+  sceneDescription.textContent = "";
+  if (sceneChoicePrompt) sceneChoicePrompt.textContent = "";
   applySceneTint(scene.backgroundTint ?? "#0a0a1a", scene.tintOpacity ?? 0.5);
   updateMoodIndicator(scene.mood ?? "cosmic");
   showInternalNote(null);
   resultText.textContent = "";
   restartButton.hidden = true;
-
-  const steps = Array.isArray(scene.breathInstruction) ? scene.breathInstruction : null;
-  const chosen = steps ? steps : (scene.breathInstruction ? t(scene.breathInstruction) : "");
-  const lines = Array.isArray(chosen) ? chosen : [chosen];
   choiceContainer.innerHTML = "";
-  lines.forEach((line) => {
-    const p = document.createElement("p");
-    p.className = "chapter-recap-line";
-    p.style.fontSize = "1rem";
-    p.style.margin = "6px 0";
-    p.textContent = line;
-    choiceContainer.appendChild(p);
-  });
-  const continueBtn = document.createElement("button");
-  continueBtn.type = "button";
-  continueBtn.className = "choice-btn";
-  continueBtn.textContent = t(scene.continueLabel ?? { EN: "Continue", TH: "ไปต่อ" });
-  continueBtn.addEventListener("click", () => {
-    if (scene.effects) {
-      engine.applyChoice(
-        normalizeChoiceForEngine({
-          id: `${scene.id}-breath`,
-          text: t(scene.title ?? { EN: "Breathing", TH: "หายใจ" }),
-          effects: scene.effects
-        }),
-        { dimensionWeights: {} }
-      );
-      renderStatus();
+
+  if (!breathScene || !breathOrb || !breathInstruction || !breathContinueBtn) return;
+  breathScene.hidden = false;
+  breathScene.classList.add("active");
+  breathContinueBtn.classList.remove("ready");
+  breathContinueBtn.textContent = t(scene.continueLabel ?? { EN: "Continue", TH: "ไปต่อ" });
+  breathContinueBtn.disabled = true;
+
+  const steps = Array.isArray(scene.breathInstruction)
+    ? scene.breathInstruction
+    : (Array.isArray(t(scene.breathInstruction)) ? t(scene.breathInstruction) : [t(scene.breathInstruction)]);
+
+  const orbitSteps = [
+    { cls: "is-inhale", text: steps[0] ?? "Breathe in..." },
+    { cls: "is-hold", text: steps[1] ?? "Hold..." },
+    { cls: "is-exhale", text: steps[2] ?? "Breathe out..." },
+    { cls: "", text: steps[3] ?? "You are here." }
+  ];
+
+  let idx = 0;
+  if (breathStepTimer) clearInterval(breathStepTimer);
+  const applyStep = () => {
+    const step = orbitSteps[idx];
+    breathOrb.classList.remove("is-inhale", "is-hold", "is-exhale");
+    if (step.cls) breathOrb.classList.add(step.cls);
+    breathInstruction.textContent = step.text;
+    idx += 1;
+    if (idx >= orbitSteps.length) {
+      if (breathStepTimer) clearInterval(breathStepTimer);
+      breathContinueBtn.classList.add("ready");
+      breathContinueBtn.disabled = false;
     }
-    const nextScene = scene.next ? getSceneById(scene.next) : null;
-    if (!nextScene || nextScene.isSummary) {
-      showSummary();
-      return;
-    }
-    currentSceneId = nextScene.id;
-    currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((entry) => entry.id === nextScene.id));
-    renderScene(nextScene);
-  });
-  choiceContainer.appendChild(continueBtn);
-  replayGalaxyTransition(sceneTitle, sceneDescription, choiceContainer);
+  };
+  applyStep();
+  breathStepTimer = window.setInterval(applyStep, 1500);
+
+  breathContinueBtn.onclick = () => {
+    withSceneTransition(() => {
+      if (scene.effects) {
+        engine.applyChoice(
+          normalizeChoiceForEngine({
+            id: `${scene.id}-breath`,
+            text: t(scene.title ?? { EN: "Breathing", TH: "หายใจ" }),
+            effects: scene.effects
+          }),
+          { dimensionWeights: {} }
+        );
+        renderStatus();
+      }
+      breathScene.classList.remove("active");
+      breathScene.hidden = true;
+      appShellToggleBreathing(false);
+      const nextScene = scene.next ? getSceneById(scene.next) : null;
+      if (!nextScene || nextScene.isSummary) {
+        showSummary();
+        return;
+      }
+      currentSceneId = nextScene.id;
+      currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((entry) => entry.id === nextScene.id));
+      renderScene(nextScene);
+    });
+  };
+}
+
+function appShellToggleBreathing(isActive) {
+  const shell = document.querySelector(".app-shell");
+  if (!shell) return;
+  shell.classList.toggle("is-breathing", isActive);
 }
 
 async function loadContentModels() {
@@ -1197,13 +1499,15 @@ function handleChoice(choice) {
 
   window.setTimeout(() => {
     isPhaseOneTransitioning = false;
-    if (isSummaryNext) {
-      renderPhaseOneSummary();
-      return;
-    }
-    currentSceneId = nextScene.id;
-    currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((scene) => scene.id === currentSceneId));
-    renderScene(nextScene);
+    withSceneTransition(() => {
+      if (isSummaryNext) {
+        renderPhaseOneSummary();
+        return;
+      }
+      currentSceneId = nextScene.id;
+      currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((scene) => scene.id === currentSceneId));
+      renderScene(nextScene);
+    });
   }, CINEMATIC_SCENE_TRANSITION_MS);
 }
 
@@ -1228,6 +1532,11 @@ function renderScene(scene) {
   hidePhaseTwoMeta();
   phaseLabel.textContent = t(scene.phaseLabel);
   sceneLabel.textContent = t(scene.sceneLabel);
+  if (chapterLabel) {
+    const chapter = scene.chapter ? t(scene.chapter) : t(scene.sceneLabel);
+    chapterLabel.textContent = chapter;
+    chapterLabel.classList.toggle("visible", Boolean(chapter));
+  }
   sceneTitle.textContent = t(scene.title);
   sceneDescription.textContent = "";
   if (sceneChoicePrompt) {
@@ -1243,6 +1552,7 @@ function renderScene(scene) {
   choiceContainer.innerHTML = "";
   choiceContainer.style.opacity = "0";
   typeTextWordByWord(sceneDescription, t(scene.description), { intervalMs: CINEMATIC_TYPEWORD_MS }).then(() => {
+    const sceneWhisperUsage = {};
     scene.choices.forEach((choice, index) => {
       const wrapper = document.createElement("div");
       wrapper.className = "orb-wrapper";
@@ -1261,8 +1571,14 @@ function renderScene(scene) {
       label.className = "orb-label";
       label.textContent = t(choice.text);
 
+      const note = document.createElement("p");
+      note.className = "orb-note";
+      const whisper = getOrbWhisper(choice, scene.id, index, sceneWhisperUsage, scene.mood ?? "neutral");
+      note.textContent = t(whisper.text ?? whisper);
+
       wrapper.appendChild(button);
       wrapper.appendChild(label);
+      wrapper.appendChild(note);
       choiceContainer.appendChild(wrapper);
 
       const profile = getHoverProfile(choice);
@@ -1275,6 +1591,8 @@ function renderScene(scene) {
         starfieldTargetGlowBoost = 1;
       });
       button.addEventListener("click", () => handleChoice(choice));
+      bindCursorHover(wrapper);
+      bindCursorHover(button);
 
       window.setTimeout(() => {
         wrapper.classList.add("revealed");
@@ -1359,6 +1677,10 @@ function showSummary() {
   restartButton.hidden = false;
   restartButton.textContent = t({ EN: "Restart Story", TH: "เริ่มเรื่องใหม่" });
   replayGalaxyTransition(sceneTitle, sceneDescription, choiceContainer, resultText);
+  if (chapterLabel) {
+    chapterLabel.textContent = t({ EN: "Final Reading", TH: "บทสรุปสุดท้าย" });
+    chapterLabel.classList.add("visible");
+  }
 }
 
 function renderPhaseTwoTurn(options = {}) {
@@ -2009,6 +2331,11 @@ async function bootstrap() {
   await loadContentModels();
   initAudio();
   initStarfield();
+  initCustomCursor();
+  initParallaxMotion();
+  bindCursorHover(langToggleBtn);
+  bindCursorHover(restartButton);
+  bindCursorHover(resetUiPrefsButton);
   if (langToggleBtn) {
     langToggleBtn.addEventListener("click", () => {
       toggleLang();
