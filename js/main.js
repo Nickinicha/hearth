@@ -2,13 +2,24 @@ import { GameEngine } from "./gameEngine.js";
 import {
   ATTACHMENT_STYLES,
   CHARACTER_ARCHETYPES,
-  DIMENSION_KEYS
+  DIMENSION_KEYS,
+  getLang,
+  toggleLang,
+  t,
+  ATTACHMENT_LABELS,
+  ARCHETYPE_LABELS,
+  PATTERN_LABELS,
+  DIMENSION_LABELS,
+  RARITY_LABELS,
+  UI,
+  formatUi
 } from "./config.js";
 import { PHASE_1_SCENES } from "./scenes.js";
 import {
   getPhaseTwoChoices,
   getTurnScenario,
-  PHASE_2_TOTAL_TURNS
+  PHASE_2_TOTAL_TURNS,
+  buildTurnScenarioFromSnapshot
 } from "./phase2.js";
 
 const engine = new GameEngine();
@@ -17,6 +28,7 @@ let viewMode = "scene";
 const PROGRESSION_STORAGE_KEY = "hearth_phase2_progression_v1";
 const PHASE_2_START_CHAPTER = 4;
 const PHASE_2_FINAL_CHAPTER = 10;
+const PHASE_1_TRANSITION_MS = 700;
 const DEFAULT_WORLD_MAP = { chapters: [] };
 const DEFAULT_SYSTEMS = {
   dimensionWeightsByFocus: {
@@ -51,42 +63,72 @@ const progression = loadProgression();
 const PERK_DEFINITIONS = [
   {
     id: "reflective-pause",
-    name: "Reflective Pause",
+    name: {
+      EN: "Reflective Pause",
+      TH: "จังหวะสะท้อน"
+    },
     rarity: "Common",
     threshold: 6,
-    description: "Soften emotional spikes: insecure losses are reduced.",
+    description: {
+      EN: "Soften emotional spikes: insecure losses are reduced.",
+      TH: "ลดหางแรงกระชากทางอารมณ์: การเสียจากความไม่มั่นคงเบาลง"
+    },
     effects: { negativeReduction: 1 }
   },
   {
     id: "grounding-ritual",
-    name: "Grounding Ritual",
+    name: {
+      EN: "Grounding Ritual",
+      TH: "พิธีกรรมเชื่อมตัว"
+    },
     rarity: "Common",
     threshold: 12,
-    description: "Start each day with a small stability boost.",
+    description: {
+      EN: "Start each day with a small stability boost.",
+      TH: "เริ่มวันด้วยความมั่นคงเล็กน้อย"
+    },
     effects: { dayStartBoost: 2 }
   },
   {
     id: "boundary-compass",
-    name: "Boundary Compass",
+    name: {
+      EN: "Boundary Compass",
+      TH: "เข็มทิศขอบเขต"
+    },
     rarity: "Rare",
     threshold: 20,
-    description: "Boundary clarity: secure decisions gain extra progress.",
+    description: {
+      EN: "Boundary clarity: secure decisions gain extra progress.",
+      TH: "ขอบเขตชัด: การตัดสินใจแบบมั่นคงได้คะแนนเพิ่ม"
+    },
     effects: { positiveBonus: 1 }
   },
   {
     id: "pattern-lens",
-    name: "Pattern Lens",
+    name: {
+      EN: "Pattern Lens",
+      TH: "เลนส์รูปแบบ"
+    },
     rarity: "Rare",
     threshold: 26,
-    description: "Meta insight: gain extra Insight from secure turns.",
+    description: {
+      EN: "Meta insight: gain extra Insight from secure turns.",
+      TH: "อินซายต์เชิงเมตา: ได้อินซายต์พิเศษจากเทิร์นแบบมั่นคง"
+    },
     effects: { insightBonusOnSecure: 1 }
   },
   {
     id: "repair-script",
-    name: "Repair Script",
+    name: {
+      EN: "Repair Script",
+      TH: "บทสนทนาซ่อมความสัมพันธ์"
+    },
     rarity: "Epic",
     threshold: 36,
-    description: "Repair momentum: larger day-start boost and stronger secure gain.",
+    description: {
+      EN: "Repair momentum: larger day-start boost and stronger secure gain.",
+      TH: "โมเมนตัมการซ่อม: เริ่มวันแรงขึ้นและได้คะแนนมั่นคงชัดขึ้น"
+    },
     effects: { dayStartBoost: 5, positiveBonus: 1 }
   }
 ];
@@ -102,9 +144,13 @@ const phaseTwoSession = {
   activePerk: progression.activePerk,
   perkShopOffers: [],
   rerollCount: 0,
-  showPerkDetails: progression.showPerkDetails
+  showPerkDetails: progression.showPerkDetails,
+  lastTurnSnapshot: null,
+  feedbackSecureShiftScore: null
 };
 let seasonRecapCache = null;
+let isPhaseOneTransitioning = false;
+let phaseTwoDaySummaryPaintPayload = null;
 
 const phaseLabel = document.querySelector("#phaseLabel");
 const sceneLabel = document.querySelector("#sceneLabel");
@@ -119,9 +165,80 @@ const phase2Meta = document.querySelector("#phase2Meta");
 const phase2TurnLabel = document.querySelector("#phase2TurnLabel");
 const phase2ProgressFill = document.querySelector("#phase2ProgressFill");
 const phase2ProgressText = document.querySelector("#phase2ProgressText");
+const langToggleBtn = document.querySelector("#langToggleBtn");
+const heroTitleEl = document.querySelector(".hero__title");
+const heroSubtitleEl = document.querySelector(".hero__subtitle");
+const statusCardTitleEl = document.querySelector(".status-card h3");
+const progressWrapEl = document.querySelector(".progress-wrap");
 
 function toDisplayName(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function labelStyle(style) {
+  return t(ATTACHMENT_LABELS[style] ?? { EN: toDisplayName(style), TH: style });
+}
+
+function labelArchetype(name) {
+  return t(ARCHETYPE_LABELS[name] ?? { EN: name, TH: name });
+}
+
+function labelPattern(patternKey) {
+  return t(PATTERN_LABELS[patternKey] ?? { EN: toDisplayName(patternKey), TH: patternKey });
+}
+
+function labelRarity(rarity) {
+  return t(RARITY_LABELS[rarity] ?? { EN: rarity, TH: rarity });
+}
+
+function applyShellI18n() {
+  document.documentElement.lang = getLang() === "TH" ? "th" : "en";
+  document.title = t(UI.docTitle);
+  if (heroTitleEl) heroTitleEl.textContent = t(UI.heroTitle);
+  if (heroSubtitleEl) heroSubtitleEl.textContent = t(UI.heroSubtitle);
+  if (statusCardTitleEl) statusCardTitleEl.textContent = t(UI.statusCardTitle);
+  if (progressWrapEl) {
+    progressWrapEl.setAttribute("aria-label", t(UI.progressSecureAria));
+  }
+  if (resetUiPrefsButton) {
+    resetUiPrefsButton.textContent = t(UI.resetUiPrefs);
+  }
+  if (langToggleBtn) {
+    langToggleBtn.textContent = getLang() === "EN" ? "ไทย" : "English";
+  }
+}
+
+function refreshCurrentView() {
+  applyShellI18n();
+  switch (viewMode) {
+    case "scene":
+      renderScene(PHASE_1_SCENES[currentSceneIndex]);
+      break;
+    case "summary":
+      renderPhaseOneSummary();
+      break;
+    case "phase2-turn":
+      renderPhaseTwoTurn({ reuseLastScenario: true });
+      break;
+    case "phase2-turn-feedback":
+      if (phaseTwoSession.feedbackSecureShiftScore != null) {
+        renderPhaseTwoTurnFeedback(phaseTwoSession.feedbackSecureShiftScore);
+      }
+      break;
+    case "phase2-perk-select":
+      renderPerkSelection();
+      break;
+    case "phase2-day-summary":
+      if (phaseTwoDaySummaryPaintPayload) {
+        applyPhaseTwoDaySummaryPaint(phaseTwoDaySummaryPaintPayload);
+      }
+      break;
+    case "phase2-season-recap":
+      renderSeasonRecap();
+      break;
+    default:
+      break;
+  }
 }
 
 async function loadContentModels() {
@@ -203,17 +320,19 @@ function saveProgression() {
 }
 
 function getScoreSummary(state) {
-  return DIMENSION_KEYS.map((key) => `${key}: ${state.dimensions[key]}`).join(" | ");
+  return DIMENSION_KEYS
+    .map((key) => `${t(DIMENSION_LABELS[key])}: ${state.dimensions[key]}`)
+    .join(" | ");
 }
 
 function getSecureShiftFeedback(secureShiftScore) {
   if (secureShiftScore >= 2) {
-    return "Strong secure shift: you balanced self-respect and connection.";
+    return t(UI.secureShiftStrong);
   }
   if (secureShiftScore >= 0) {
-    return "Partial secure shift: a healthy impulse appeared, but consistency needs practice.";
+    return t(UI.secureShiftPartial);
   }
-  return "Insecure pattern detected: fear management overrode grounded communication.";
+  return t(UI.secureShiftInsecure);
 }
 
 function hasPerk(perkId) {
@@ -222,7 +341,7 @@ function hasPerk(perkId) {
 
 function getUnlockedPerkNames() {
   return PERK_DEFINITIONS.filter((perk) => hasPerk(perk.id))
-    .map((perk) => perk.name)
+    .map((perk) => t(perk.name))
     .join(", ");
 }
 
@@ -232,7 +351,7 @@ function getUnlockedPerks() {
 
 function getPerkName(perkId) {
   const perk = PERK_DEFINITIONS.find((entry) => entry.id === perkId);
-  return perk ? perk.name : "None";
+  return perk ? t(perk.name) : t({ EN: "None", TH: "ไม่มี" });
 }
 
 function getPerkById(perkId) {
@@ -268,14 +387,14 @@ function grantInsightPoints(secureShiftScore) {
 }
 
 function unlockPerksByProgression() {
-  const unlockedNow = [];
+  const unlockedIds = [];
   PERK_DEFINITIONS.forEach((perk) => {
     if (progression.insightPoints >= perk.threshold && !hasPerk(perk.id)) {
       progression.unlockedPerks.push(perk.id);
-      unlockedNow.push(perk.name);
+      unlockedIds.push(perk.id);
     }
   });
-  return unlockedNow;
+  return unlockedIds;
 }
 
 function pickPhaseTwoCharacter() {
@@ -514,30 +633,28 @@ function exportSeasonRecapAll() {
 function getPerkScoreReasons(perk, dominantStyle, difficultyTier) {
   const effects = perk?.effects ?? {};
   const reasons = [];
-  const styleLabel = toDisplayName(dominantStyle);
+  const styleLabel = labelStyle(dominantStyle);
 
-  reasons.push(`Player style trend: ${styleLabel}, difficulty tier: ${difficultyTier}.`);
+  reasons.push(formatUi(UI.perkReasonIntro, { style: styleLabel, tier: difficultyTier }));
 
   if ((effects.positiveBonus ?? 0) > 0) {
-    reasons.push(
-      `Secure gains boosted by ${formatSigned(effects.positiveBonus)} positive scale.`
-    );
+    reasons.push(formatUi(UI.perkReasonPositive, { n: effects.positiveBonus }));
   }
   if ((effects.negativeReduction ?? 0) > 0) {
     reasons.push(
-      `Insecure penalties softened by ${formatSigned(-(effects.negativeReduction))} negative scale.`
+      formatUi(UI.perkReasonNegative, { n: effects.negativeReduction })
     );
   }
   if ((effects.dayStartBoost ?? 0) > 0) {
-    reasons.push(`Day starts with ${formatSigned(effects.dayStartBoost)} secure progress.`);
+    reasons.push(formatUi(UI.perkReasonDay, { n: effects.dayStartBoost }));
   }
   if ((effects.insightBonusOnSecure ?? 0) > 0) {
     reasons.push(
-      `Secure choices grant ${formatSigned(effects.insightBonusOnSecure)} extra Insight.`
+      formatUi(UI.perkReasonInsight, { n: effects.insightBonusOnSecure })
     );
   }
   if (reasons.length === 1) {
-    reasons.push("Value mainly comes from baseline consistency under current difficulty.");
+    reasons.push(t(UI.perkReasonBaseline));
   }
 
   return reasons.join(" ");
@@ -551,8 +668,10 @@ function buildTelemetryPanel(offers) {
 
   const title = document.createElement("p");
   title.className = "telemetry-title";
-  title.textContent =
-    `Telemetry: expected perk value for ${toDisplayName(dominantStyle)} style (difficulty ${difficultyTier})`;
+  title.textContent = formatUi(UI.telemetryTitle, {
+    style: labelStyle(dominantStyle),
+    tier: difficultyTier
+  });
   panel.appendChild(title);
 
   const list = document.createElement("div");
@@ -569,9 +688,14 @@ function buildTelemetryPanel(offers) {
     const row = document.createElement("p");
     row.className = "telemetry-row";
     row.title = getPerkScoreReasons(perk, dominantStyle, difficultyTier);
-    row.textContent =
-      `#${index + 1} ${perk.name} (${perk.rarity}) — Score ${metric.strategicScore}, ` +
-      `EV Secure ${metric.evSecureProgress}, EV Insight ${metric.evInsight}`;
+    row.textContent = formatUi(UI.telemetryRow, {
+      rank: index + 1,
+      name: t(perk.name),
+      rarity: labelRarity(perk.rarity),
+      score: metric.strategicScore,
+      evS: metric.evSecureProgress,
+      evI: metric.evInsight
+    });
     list.appendChild(row);
   });
 
@@ -593,12 +717,24 @@ function updateUiPreferenceButtonVisibility() {
 
 function renderPhaseTwoMeta() {
   phase2Meta.hidden = false;
-  const seasonText = progression.season ? `Season ${progression.season} • ` : "";
+  const seasonText = progression.season
+    ? formatUi(UI.seasonPrefix, { season: progression.season })
+    : "";
   phase2TurnLabel.textContent =
-    `${seasonText}Day ${phaseTwoSession.day} • Turn ${phaseTwoSession.turn} / ${PHASE_2_TOTAL_TURNS} • Difficulty ${phaseTwoSession.difficultyTier}`;
+    seasonText +
+    formatUi(UI.phase2TurnRest, {
+      day: phaseTwoSession.day,
+      turn: phaseTwoSession.turn,
+      total: PHASE_2_TOTAL_TURNS,
+      difficulty: phaseTwoSession.difficultyTier
+    });
   phase2ProgressFill.style.width = `${phaseTwoSession.secureProgress}%`;
-  phase2ProgressText.textContent =
-    `Progress toward Secure: ${phaseTwoSession.secureProgress}% • Insight: ${progression.insightPoints} • Active Perk: ${getPerkName(phaseTwoSession.activePerk)} (${getPerkRarity(phaseTwoSession.activePerk)})`;
+  phase2ProgressText.textContent = formatUi(UI.phase2ProgressLine, {
+    pct: phaseTwoSession.secureProgress,
+    insight: progression.insightPoints,
+    perk: getPerkName(phaseTwoSession.activePerk),
+    rarity: getPerkRarity(phaseTwoSession.activePerk)
+  });
 }
 
 function renderStatus() {
@@ -608,7 +744,7 @@ function renderStatus() {
   ATTACHMENT_STYLES.forEach((style) => {
     const pill = document.createElement("div");
     pill.className = "status-pill";
-    pill.textContent = `${toDisplayName(style)}: ${state.scores[style]}`;
+    pill.textContent = `${labelStyle(style)}: ${state.scores[style]}`;
     attachmentStatus.appendChild(pill);
   });
 }
@@ -620,9 +756,9 @@ function finalizeScene() {
   const dominantPattern = engine.getDerivedPattern();
 
   resultText.textContent =
-    `Current archetype signal: ${dominantArchetype}. ` +
-    `Dominant attachment trend: ${toDisplayName(dominantStyle)}. ` +
-    `Pattern baseline: ${toDisplayName(dominantPattern)}.`;
+    `Current archetype signal: ${labelArchetype(dominantArchetype)}. ` +
+    `Dominant attachment trend: ${labelStyle(dominantStyle)}. ` +
+    `Pattern baseline: ${labelPattern(dominantPattern)}.`;
 
   const scoreSummary = getScoreSummary(state);
   resultText.textContent += ` Core logic score -> ${scoreSummary}`;
@@ -636,21 +772,40 @@ function finalizeScene() {
 }
 
 function handleChoice(choice) {
+  if (isPhaseOneTransitioning) {
+    return;
+  }
+  isPhaseOneTransitioning = true;
   const chapter = getPhaseOneChapterForScene(currentSceneIndex);
   const dimensionWeights = getDimensionWeightsForChapter(chapter);
   engine.applyChoice(choice, { dimensionWeights });
   renderStatus();
-  finalizeScene();
+  choiceContainer.innerHTML = "";
+  restartButton.hidden = true;
+  const isLastScene = currentSceneIndex >= PHASE_1_SCENES.length - 1;
+  resultText.textContent = isLastScene
+    ? t(UI.phase1TransitionSummary)
+    : formatUi(UI.phase1TransitionNext, { n: currentSceneIndex + 2 });
+
+  window.setTimeout(() => {
+    isPhaseOneTransitioning = false;
+    if (isLastScene) {
+      renderPhaseOneSummary();
+      return;
+    }
+    currentSceneIndex += 1;
+    renderScene(PHASE_1_SCENES[currentSceneIndex]);
+  }, PHASE_1_TRANSITION_MS);
 }
 
 function renderScene(scene) {
   viewMode = "scene";
   updateUiPreferenceButtonVisibility();
   hidePhaseTwoMeta();
-  phaseLabel.textContent = scene.phaseLabel;
-  sceneLabel.textContent = scene.sceneLabel;
-  sceneTitle.textContent = scene.title;
-  sceneDescription.textContent = scene.description;
+  phaseLabel.textContent = t(scene.phaseLabel);
+  sceneLabel.textContent = t(scene.sceneLabel);
+  sceneTitle.textContent = t(scene.title);
+  sceneDescription.textContent = t(scene.description);
   resultText.textContent = "";
   restartButton.hidden = true;
 
@@ -659,7 +814,7 @@ function renderScene(scene) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice-btn";
-    button.textContent = choice.text;
+    button.textContent = t(choice.text);
     button.addEventListener("click", () => handleChoice(choice));
     choiceContainer.appendChild(button);
   });
@@ -677,24 +832,25 @@ function renderPhaseOneSummary() {
   const dominantPattern = engine.getDerivedPattern();
   const scoreSummary = getScoreSummary(state);
 
-  phaseLabel.textContent = "Phase 1 Complete";
-  sceneLabel.textContent = "Player Profile Summary";
-  sceneTitle.textContent = "Your Emotional Blueprint";
-  sceneDescription.textContent =
-    "This summary is your baseline before entering Phase 2: The Sim.";
+  phaseLabel.textContent = t(UI.phase1Complete);
+  sceneLabel.textContent = t(UI.playerProfileSummary);
+  sceneTitle.textContent = t(UI.emotionalBlueprint);
+  sceneDescription.textContent = t(UI.summaryIntro);
   choiceContainer.innerHTML = "";
 
-  resultText.textContent =
-    `Primary attachment trend: ${toDisplayName(dominantStyle)}. ` +
-    `Current archetype signal: ${dominantArchetype}. ` +
-    `Pattern orientation: ${toDisplayName(dominantPattern)}. ` +
-    `Core scores -> ${scoreSummary}.`;
+  resultText.textContent = formatUi(UI.summaryPrimaryLine, {
+    style: labelStyle(dominantStyle),
+    archetype: labelArchetype(dominantArchetype),
+    pattern: labelPattern(dominantPattern),
+    scores: scoreSummary
+  });
 
   restartButton.hidden = false;
-  restartButton.textContent = "Start Phase 2 Starter Loop";
+  restartButton.textContent = t(UI.startPhase2);
 }
 
-function renderPhaseTwoTurn() {
+function renderPhaseTwoTurn(options = {}) {
+  const { reuseLastScenario = false } = options;
   viewMode = "phase2-turn";
   updateUiPreferenceButtonVisibility();
   const state = engine.getState();
@@ -706,32 +862,55 @@ function renderPhaseTwoTurn() {
   }
   phaseTwoSession.difficultyTier = getAdaptiveDifficultyTier();
   renderPhaseTwoMeta();
-  const turnScenario = getTurnScenario(
-    phaseTwoSession.character,
-    phaseTwoSession.turn,
-    phaseTwoSession.difficultyTier,
-    {
-      dominantStyle: engine.getTopAttachmentStyle(),
-      seenScenarios: phaseTwoSession.seenScenarios
-    }
-  );
-  phaseTwoSession.seenScenarios.push(turnScenario.text);
 
-  phaseLabel.textContent = "Phase 2 - The Sim";
+  const snap = phaseTwoSession.lastTurnSnapshot;
+  const canReuse =
+    reuseLastScenario &&
+    snap &&
+    snap.archetype === phaseTwoSession.character &&
+    snap.turnNumber === phaseTwoSession.turn;
+
+  let turnScenario;
+  if (canReuse) {
+    turnScenario = buildTurnScenarioFromSnapshot(snap);
+  } else {
+    turnScenario = getTurnScenario(
+      phaseTwoSession.character,
+      phaseTwoSession.turn,
+      phaseTwoSession.difficultyTier,
+      {
+        dominantStyle: engine.getTopAttachmentStyle(),
+        seenScenarios: phaseTwoSession.seenScenarios
+      }
+    );
+    phaseTwoSession.seenScenarios.push(turnScenario.scenarioId);
+    phaseTwoSession.lastTurnSnapshot = {
+      archetype: phaseTwoSession.character,
+      scenarioId: turnScenario.scenarioId,
+      turnNumber: phaseTwoSession.turn,
+      difficultyTier: phaseTwoSession.difficultyTier
+    };
+  }
+
+  phaseLabel.textContent = t(UI.phase2Sim);
   const chapter = getCurrentPhaseTwoChapter();
   sceneLabel.textContent = chapter
     ? `Chapter ${chapter.order}: ${chapter.title}`
-    : "Starter Loop";
-  sceneTitle.textContent = `Day Loop with ${phaseTwoSession.character}`;
+    : t(UI.starterLoop);
+  sceneTitle.textContent = formatUi(UI.dayLoopWith, {
+    name: labelArchetype(phaseTwoSession.character)
+  });
+  const hiddenPart = chapter
+    ? `${t(UI.hiddenQuestionPrefix)} ${chapter.hiddenQuestion}. `
+    : "";
   sceneDescription.textContent =
-    `${turnScenario.text} ` +
-    `${chapter ? `Hidden question: ${chapter.hiddenQuestion}. ` : ""}` +
-    "How do you respond?";
+    `${turnScenario.text} ${hiddenPart}${t(UI.howRespond)}`;
 
-  resultText.textContent =
-    `Baseline before this turn -> attachment: ${toDisplayName(engine.getTopAttachmentStyle())}, ` +
-    `pattern: ${toDisplayName(engine.getDerivedPattern())}, ` +
-    `${getScoreSummary(state)}.`;
+  resultText.textContent = formatUi(UI.baselineTurn, {
+    style: labelStyle(engine.getTopAttachmentStyle()),
+    pattern: labelPattern(engine.getDerivedPattern()),
+    scores: getScoreSummary(state)
+  });
   restartButton.hidden = true;
 
   choiceContainer.innerHTML = "";
@@ -739,7 +918,7 @@ function renderPhaseTwoTurn() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice-btn";
-    button.textContent = choice.text;
+    button.textContent = t(choice.text);
     button.addEventListener("click", () => handlePhaseTwoChoice(choice));
     choiceContainer.appendChild(button);
   });
@@ -766,6 +945,7 @@ function startPhaseTwoDayWithPerk(perkId) {
   phaseTwoSession.seenScenarios = [];
   phaseTwoSession.perkShopOffers = [];
   phaseTwoSession.rerollCount = 0;
+  phaseTwoSession.lastTurnSnapshot = null;
   saveProgression();
   renderPhaseTwoTurn();
 }
@@ -784,13 +964,17 @@ function renderPerkSelection() {
     phaseTwoSession.perkShopOffers.length > 0
       ? phaseTwoSession.perkShopOffers
       : getPerkShopOffers();
-  phaseLabel.textContent = "Phase 2 - Strategic Layer";
-  sceneLabel.textContent = `Season ${progression.season} · Day ${phaseTwoSession.day} Preparation`;
-  sceneTitle.textContent = "Choose 1 Active Perk";
-  sceneDescription.textContent =
-    "Select one perk for this day. Only the selected perk affects this day loop.";
-  resultText.textContent =
-    `Available perks unlocked: ${getUnlockedPerkNames()}. Current insight: ${progression.insightPoints}.`;
+  phaseLabel.textContent = t(UI.phase2Strategic);
+  sceneLabel.textContent = formatUi(UI.seasonDayPrep, {
+    season: progression.season,
+    day: phaseTwoSession.day
+  });
+  sceneTitle.textContent = t(UI.choosePerkTitle);
+  sceneDescription.textContent = t(UI.choosePerkDesc);
+  resultText.textContent = formatUi(UI.perkPoolLine, {
+    names: getUnlockedPerkNames() || t(UI.noneYet),
+    insight: progression.insightPoints
+  });
   restartButton.hidden = true;
 
   choiceContainer.innerHTML = "";
@@ -798,8 +982,8 @@ function renderPerkSelection() {
   detailToggle.type = "button";
   detailToggle.className = "secondary-btn detail-toggle-btn";
   detailToggle.textContent = phaseTwoSession.showPerkDetails
-    ? "Hide details"
-    : "Show details";
+    ? t(UI.hideDetails)
+    : t(UI.showDetails);
   detailToggle.addEventListener("click", () => {
     phaseTwoSession.showPerkDetails = !phaseTwoSession.showPerkDetails;
     progression.showPerkDetails = phaseTwoSession.showPerkDetails;
@@ -821,7 +1005,7 @@ function renderPerkSelection() {
     button.type = "button";
     button.className = "choice-btn";
     button.textContent =
-      `[${perk.rarity}] ${perk.name} — ${perk.description} ` +
+      `[${labelRarity(perk.rarity)}] ${t(perk.name)} — ${t(perk.description)} ` +
       `(EV score: ${metric.strategicScore})`;
     button.addEventListener("click", () => startPhaseTwoDayWithPerk(perk.id));
 
@@ -830,7 +1014,7 @@ function renderPerkSelection() {
     if (!phaseTwoSession.showPerkDetails) {
       tooltip.classList.add("is-collapsed");
     }
-    tooltip.textContent = `Why this score: ${getPerkScoreReasons(perk, dominantStyle, difficultyTier)}`;
+    tooltip.textContent = `${t(UI.whyScorePrefix)} ${getPerkScoreReasons(perk, dominantStyle, difficultyTier)}`;
 
     const card = document.createElement("div");
     card.className = "perk-card";
@@ -843,7 +1027,7 @@ function renderPerkSelection() {
   const rerollButton = document.createElement("button");
   rerollButton.type = "button";
   rerollButton.className = "choice-btn";
-  rerollButton.textContent = `Reroll Perk Choices (-${rerollCost} Insight)`;
+  rerollButton.textContent = formatUi(UI.rerollPerks, { cost: rerollCost });
   rerollButton.disabled = progression.insightPoints < rerollCost;
   rerollButton.addEventListener("click", () => {
     if (progression.insightPoints < rerollCost) {
@@ -880,6 +1064,7 @@ function handlePhaseTwoChoice(choice) {
 }
 
 function renderPhaseTwoTurnFeedback(secureShiftScore) {
+  phaseTwoSession.feedbackSecureShiftScore = secureShiftScore;
   viewMode = "phase2-turn-feedback";
   updateUiPreferenceButtonVisibility();
   renderPhaseTwoMeta();
@@ -887,27 +1072,25 @@ function renderPhaseTwoTurnFeedback(secureShiftScore) {
   const feedback = getSecureShiftFeedback(secureShiftScore);
 
   choiceContainer.innerHTML = "";
-  phaseLabel.textContent = "Phase 2 - Turn Complete";
-  sceneLabel.textContent = "Secure Shift Feedback";
-  sceneTitle.textContent = `Turn ${phaseTwoSession.turn} Reflection`;
-  sceneDescription.textContent =
-    "Use this signal to adjust your next decision.";
-  resultText.textContent =
-    `${feedback} Running scores -> ${getScoreSummary(state)}. ` +
-    `Meta economy -> Insight points: ${progression.insightPoints}. Active perk: ${getPerkName(phaseTwoSession.activePerk)} (${getPerkRarity(phaseTwoSession.activePerk)}).`;
+  phaseLabel.textContent = t(UI.phase2TurnDone);
+  sceneLabel.textContent = t(UI.secureShiftFeedback);
+  sceneTitle.textContent = formatUi(UI.turnReflection, { n: phaseTwoSession.turn });
+  sceneDescription.textContent = t(UI.useSignalNext);
+  resultText.textContent = formatUi(UI.feedbackResultLine, {
+    feedback,
+    scores: getScoreSummary(state),
+    insight: progression.insightPoints,
+    perk: getPerkName(phaseTwoSession.activePerk),
+    rarity: getPerkRarity(phaseTwoSession.activePerk)
+  });
 
   restartButton.hidden = false;
-  restartButton.textContent = "Next Turn";
+  restartButton.textContent = t(UI.nextTurn);
 }
 
 function renderPhaseTwoDaySummary(lastTurnShiftScore) {
-  viewMode = "phase2-day-summary";
-  updateUiPreferenceButtonVisibility();
-  renderPhaseTwoMeta();
   const state = engine.getState();
   const dominantStyle = engine.getTopAttachmentStyle();
-  const dominantPattern = engine.getDerivedPattern();
-  const feedback = getSecureShiftFeedback(lastTurnShiftScore);
   const unlockedNow = unlockPerksByProgression();
   const chapter = getCurrentPhaseTwoChapter();
   const chapterPolicy = getNextChapterPolicy(phaseTwoSession.chapterIndex);
@@ -935,42 +1118,88 @@ function renderPhaseTwoDaySummary(lastTurnShiftScore) {
   progression.lastDominantStyle = dominantStyle;
   saveProgression();
 
+  phaseTwoDaySummaryPaintPayload = {
+    lastTurnShiftScore,
+    chapter,
+    chapterPolicy,
+    nextChapter,
+    unlockedPerkIds: unlockedNow
+  };
+  applyPhaseTwoDaySummaryPaint(phaseTwoDaySummaryPaintPayload);
+}
+
+function applyPhaseTwoDaySummaryPaint(payload) {
+  const { lastTurnShiftScore, chapter, chapterPolicy, nextChapter, unlockedPerkIds } = payload;
+  viewMode = "phase2-day-summary";
+  updateUiPreferenceButtonVisibility();
+  renderPhaseTwoMeta();
+  const state = engine.getState();
+  const dominantStyle = engine.getTopAttachmentStyle();
+  const dominantPattern = engine.getDerivedPattern();
+  const feedback = getSecureShiftFeedback(lastTurnShiftScore);
+
   choiceContainer.innerHTML = "";
-  phaseLabel.textContent = "Phase 2 - Day Complete";
-  sceneLabel.textContent = `Day ${phaseTwoSession.day} Summary`;
-  sceneTitle.textContent = `Loop Result with ${phaseTwoSession.character}`;
-  sceneDescription.textContent =
-    chapterPolicy.isSeasonComplete
-      ? "You completed the final chapter. Season is now in reflection lock."
-      : "You completed 5 interaction turns. This is your current secure-shift trajectory.";
+  phaseLabel.textContent = t(UI.phase2DayDone);
+  sceneLabel.textContent = formatUi(UI.daySummary, { day: phaseTwoSession.day });
+  sceneTitle.textContent = formatUi(UI.loopResultWith, {
+    name: labelArchetype(phaseTwoSession.character)
+  });
+  sceneDescription.textContent = chapterPolicy.isSeasonComplete
+    ? t(UI.finalChapterLock)
+    : t(UI.completedFiveTurns);
 
   if (chapter) {
     const recapCard = document.createElement("div");
     recapCard.className = "chapter-recap-card";
     recapCard.innerHTML =
-      `<p class="chapter-recap-title">Chapter Recap</p>` +
-      `<p class="chapter-recap-line">Season ${progression.season} · Day ${phaseTwoSession.day} · Chapter ${chapter.order}: ${chapter.title}</p>` +
-      `<p class="chapter-recap-line">Pattern: ${chapter.pattern}</p>` +
-      `<p class="chapter-recap-line">Hidden question: ${chapter.hiddenQuestion}</p>` +
-      `<p class="chapter-recap-line">Focus dimension: ${chapter.focusDimension}</p>`;
+      `<p class="chapter-recap-title">${t(UI.chapterRecapTitle)}</p>` +
+      `<p class="chapter-recap-line">${formatUi(UI.seasonDayChapterLine, {
+        season: progression.season,
+        day: phaseTwoSession.day,
+        order: chapter.order,
+        title: chapter.title
+      })}</p>` +
+      `<p class="chapter-recap-line">${t(UI.patternLine)} ${chapter.pattern}</p>` +
+      `<p class="chapter-recap-line">${t(UI.hiddenQuestionLine)} ${chapter.hiddenQuestion}</p>` +
+      `<p class="chapter-recap-line">${t(UI.focusLine)} ${chapter.focusDimension}</p>`;
     choiceContainer.appendChild(recapCard);
   }
-  resultText.textContent =
-    `${chapter ? `Chapter focus: ${chapter.focusDimension}. ` : ""}` +
-    `Dominant attachment: ${toDisplayName(dominantStyle)}. ` +
-    `Pattern: ${toDisplayName(dominantPattern)}. ` +
-    `${feedback} Final day progress toward Secure: ${phaseTwoSession.secureProgress}%. ` +
-    `Next day difficulty preview: ${progression.difficultyTier}. ` +
-    `Core scores -> ${getScoreSummary(state)}. ` +
-    `Insight points: ${progression.insightPoints}. ` +
-    `Active perk used: ${getPerkName(phaseTwoSession.activePerk)} (${getPerkRarity(phaseTwoSession.activePerk)}). ` +
-    `Unlocked perks: ${getUnlockedPerkNames() || "None yet"}.` +
-    (unlockedNow.length > 0 ? ` New unlocks today: ${unlockedNow.join(", ")}.` : "");
+
+  const chapterFocus = chapter
+    ? formatUi(UI.chapterFocusPrefix, { focus: chapter.focusDimension })
+    : "";
+
+  const newUnlocksText =
+    unlockedPerkIds.length > 0
+      ? formatUi(UI.newUnlocksPrefix, {
+          list: unlockedPerkIds.map((id) => t(getPerkById(id).name)).join(", ")
+        })
+      : "";
+
+  resultText.textContent = formatUi(UI.daySummaryBody, {
+    chapterFocus,
+    style: labelStyle(dominantStyle),
+    pattern: labelPattern(dominantPattern),
+    feedback,
+    secure: phaseTwoSession.secureProgress,
+    difficulty: progression.difficultyTier,
+    scores: getScoreSummary(state),
+    insight: progression.insightPoints,
+    perk: getPerkName(phaseTwoSession.activePerk),
+    rarity: getPerkRarity(phaseTwoSession.activePerk),
+    unlocked: getUnlockedPerkNames() || t(UI.noneYet),
+    newUnlocks: newUnlocksText
+  });
 
   restartButton.hidden = false;
   restartButton.textContent = chapterPolicy.isSeasonComplete
-    ? "View Season Recap"
-    : `Start Day ${progression.day}` + (nextChapter ? ` · Chapter ${nextChapter.order}` : "");
+    ? t(UI.viewSeasonRecap)
+    : formatUi(UI.startNextDay, {
+        day: progression.day,
+        chapter: nextChapter
+          ? formatUi(UI.chapterSuffix, { order: nextChapter.order })
+          : ""
+      });
 }
 
 function getSeasonHistory(season) {
@@ -1057,11 +1286,10 @@ function renderSeasonRecap() {
     ? `${seasonHistory[0].chapterOrder}-${seasonHistory[seasonHistory.length - 1].chapterOrder}`
     : "4-10";
 
-  phaseLabel.textContent = "Phase 2 - Season Recap";
-  sceneLabel.textContent = `Season ${season} Review`;
-  sceneTitle.textContent = "Chapter 4-10 Integrated Reflection";
-  sceneDescription.textContent =
-    "Review your full season journey before entering the next season.";
+  phaseLabel.textContent = t(UI.phase2SeasonRecap);
+  sceneLabel.textContent = formatUi(UI.seasonReview, { n: season });
+  sceneTitle.textContent = t(UI.chapterIntegrated);
+  sceneDescription.textContent = t(UI.recapSeasonIntro);
 
   const selfWorthSeries = seasonHistory.map((entry) => entry.dimensions?.selfWorth ?? 0);
   const motivationSeries = seasonHistory.map((entry) => entry.dimensions?.motivation ?? 0);
@@ -1082,7 +1310,7 @@ function renderSeasonRecap() {
   const patternDelta = getSeriesDelta(patternSeries);
 
   const trendSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${chart.width} ${chart.height}" class="trend-svg" role="img" aria-label="Season trend lines">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${chart.width} ${chart.height}" class="trend-svg" role="img" aria-label="${t(UI.trendSvgAria)}">
       ${renderTrendAxis(chapterOrders, chart)}
       ${buildTrendLine(selfWorthSeries, "#8b6d3a", chart)}
       ${buildTrendLine(motivationSeries, "#3d6f8b", chart)}
@@ -1109,21 +1337,25 @@ function renderSeasonRecap() {
 
   const listItems = seasonHistory
     .map((entry) =>
-      `<li>Chapter ${entry.chapterOrder} - ${entry.chapterTitle} (${entry.focusDimension})</li>`
+      `<li>${formatUi(UI.chapterListItem, {
+        order: entry.chapterOrder,
+        title: entry.chapterTitle,
+        focus: entry.focusDimension
+      })}</li>`
     )
     .join("");
 
   recapCard.innerHTML =
-    `<p class="chapter-recap-title">Season ${season} Chapters (${historyRangeText})</p>` +
-    `<ul class="season-recap-list">${listItems || "<li>No chapter history found yet.</li>"}</ul>` +
-    `<p class="chapter-recap-title">Mini Trend Line</p>` +
+    `<p class="chapter-recap-title">${formatUi(UI.seasonChaptersTitle, { n: season, range: historyRangeText })}</p>` +
+    `<ul class="season-recap-list">${listItems || `<li>${t(UI.noHistory)}</li>`}</ul>` +
+    `<p class="chapter-recap-title">${t(UI.miniTrend)}</p>` +
     `<div class="trend-legend">` +
-      `<span>SelfWorth</span><span>Motivation</span><span>Pattern</span>` +
+      `<span>${t(UI.trendLegendSelf)}</span><span>${t(UI.trendLegendMot)}</span><span>${t(UI.trendLegendPat)}</span>` +
     `</div>` +
     `<div class="trend-deltas">` +
-      `<span>SelfWorth ${formatSigned(selfWorthDelta)} (chapter ${historyRangeText})</span>` +
-      `<span>Motivation ${formatSigned(motivationDelta)} (chapter ${historyRangeText})</span>` +
-      `<span>Pattern ${formatSigned(patternDelta)} (chapter ${historyRangeText})</span>` +
+      `<span>${formatUi(UI.trendDeltaLine, { label: t(UI.trendLegendSelf), signed: formatSigned(selfWorthDelta), range: historyRangeText })}</span>` +
+      `<span>${formatUi(UI.trendDeltaLine, { label: t(UI.trendLegendMot), signed: formatSigned(motivationDelta), range: historyRangeText })}</span>` +
+      `<span>${formatUi(UI.trendDeltaLine, { label: t(UI.trendLegendPat), signed: formatSigned(patternDelta), range: historyRangeText })}</span>` +
     `</div>` +
     trendSvg;
 
@@ -1135,25 +1367,25 @@ function renderSeasonRecap() {
   const exportAllButton = document.createElement("button");
   exportAllButton.type = "button";
   exportAllButton.className = "secondary-btn";
-  exportAllButton.textContent = "Export All";
+  exportAllButton.textContent = t(UI.exportAll);
   exportAllButton.addEventListener("click", () => exportSeasonRecapAll());
 
   const exportJsonButton = document.createElement("button");
   exportJsonButton.type = "button";
   exportJsonButton.className = "secondary-btn";
-  exportJsonButton.textContent = "Export JSON";
+  exportJsonButton.textContent = t(UI.exportJson);
   exportJsonButton.addEventListener("click", () => exportSeasonRecapJson());
 
   const exportCsvButton = document.createElement("button");
   exportCsvButton.type = "button";
   exportCsvButton.className = "secondary-btn";
-  exportCsvButton.textContent = "Export CSV";
+  exportCsvButton.textContent = t(UI.exportCsv);
   exportCsvButton.addEventListener("click", () => exportSeasonRecapCsv());
 
   const exportSvgButton = document.createElement("button");
   exportSvgButton.type = "button";
   exportSvgButton.className = "secondary-btn";
-  exportSvgButton.textContent = "Export SVG Snapshot";
+  exportSvgButton.textContent = t(UI.exportSvg);
   exportSvgButton.addEventListener("click", () => exportSeasonRecapSvg());
 
   exportRow.appendChild(exportAllButton);
@@ -1162,10 +1394,9 @@ function renderSeasonRecap() {
   exportRow.appendChild(exportSvgButton);
   choiceContainer.appendChild(exportRow);
 
-  resultText.textContent =
-    `Season ${season} complete. Use this recap to choose your next strategy.`;
+  resultText.textContent = formatUi(UI.seasonRecapFooter, { n: season });
   restartButton.hidden = false;
-  restartButton.textContent = `Start Season ${season + 1}`;
+  restartButton.textContent = formatUi(UI.startSeason, { n: season + 1 });
 }
 
 function startNextPhaseTwoDay() {
@@ -1200,6 +1431,9 @@ function resetEntireRun() {
   phaseTwoSession.perkShopOffers = [];
   phaseTwoSession.rerollCount = 0;
   phaseTwoSession.showPerkDetails = progression.showPerkDetails;
+  phaseTwoSession.lastTurnSnapshot = null;
+  phaseTwoSession.feedbackSecureShiftScore = null;
+  phaseTwoDaySummaryPaintPayload = null;
   renderScene(PHASE_1_SCENES[currentSceneIndex]);
 }
 
@@ -1258,6 +1492,13 @@ resetUiPrefsButton.addEventListener("click", () => {
 
 async function bootstrap() {
   await loadContentModels();
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener("click", () => {
+      toggleLang();
+      refreshCurrentView();
+    });
+  }
+  applyShellI18n();
   renderScene(PHASE_1_SCENES[currentSceneIndex]);
 }
 
