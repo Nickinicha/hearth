@@ -1,0 +1,95 @@
+{
+  "version": "3.0",
+  "chapters": [
+    {
+      "id": "chapter-1-mirror",
+      "order": 1,
+      "title": "The Mirror",
+      "pattern": "Self-identity before relationship",
+      "hiddenQuestion": "Who am I in relationship?",
+      "focusDimension": "selfWorth",
+      "phaseGroup": "self-discovery"
+    },
+    {
+      "id": "chapter-2-crush",
+      "order": 2,
+      "title": "The Crush",
+      "pattern": "Projection vs reality",
+      "hiddenQuestion": "Do I like them, or my projection?",
+      "focusDimension": "motivation",
+      "phaseGroup": "self-discovery"
+    },
+    {
+      "id": "chapter-3-friend-zone",
+      "order": 3,
+      "title": "Friend Zone",
+      "pattern": "Conditional giving",
+      "hiddenQuestion": "Why do I give?",
+      "focusDimension": "motivation",
+      "phaseGroup": "self-discovery"
+    },
+    {
+      "id": "chapter-4-love-bombing",
+      "order": 4,
+      "title": "Love Bombing",
+      "pattern": "Early intensity and signals",
+      "hiddenQuestion": "Can I trust and act on early red flags?",
+      "focusDimension": "pattern",
+      "phaseGroup": "attraction"
+    },
+    {
+      "id": "chapter-5-situationship",
+      "order": 5,
+      "title": "Situationship",
+      "pattern": "Undefined middle zone",
+      "hiddenQuestion": "Why do I accept less than I need?",
+      "focusDimension": "selfWorth",
+      "phaseGroup": "attraction"
+    },
+    {
+      "id": "chapter-6-narcissist",
+      "order": 6,
+      "title": "The Narcissist",
+      "pattern": "Losing self in relationship",
+      "hiddenQuestion": "Where did I begin losing myself?",
+      "focusDimension": "selfWorth",
+      "phaseGroup": "attraction"
+    },
+    {
+      "id": "chapter-7-one-night-stand",
+      "order": 7,
+      "title": "One Night Stand",
+      "pattern": "Closeness without commitment",
+      "hiddenQuestion": "What do I actually want?",
+      "focusDimension": "motivation",
+      "phaseGroup": "boundary-test"
+    },
+    {
+      "id": "chapter-8-open-relationship",
+      "order": 8,
+      "title": "Open Relationship",
+      "pattern": "Freedom vs fear of commitment",
+      "hiddenQuestion": "Is this value, or fear pattern?",
+      "focusDimension": "pattern",
+      "phaseGroup": "boundary-test"
+    },
+    {
+      "id": "chapter-9-comeback",
+      "order": 9,
+      "title": "The Comeback",
+      "pattern": "Ex returns",
+      "hiddenQuestion": "Did I truly change?",
+      "focusDimension": "pattern",
+      "phaseGroup": "boundary-test"
+    },
+    {
+      "id": "chapter-10-mirror-again",
+      "order": 10,
+      "title": "The Mirror Again",
+      "pattern": "Integrated self-awareness",
+      "hiddenQuestion": "How did my three answers evolve?",
+      "focusDimension": "integrated",
+      "phaseGroup": "integration"
+    }
+  ]
+}

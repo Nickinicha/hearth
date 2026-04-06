@@ -1,0 +1,43 @@
+{
+  "version": "3.0",
+  "attachments": ["anxious", "secure", "avoidant", "fearful"],
+  "archetypes": ["The Seeker", "The Anchor", "The Nurturer", "The Builder"],
+  "coreDimensions": ["selfWorth", "motivation", "pattern"],
+  "dimensionWeightsByFocus": {
+    "selfWorth": {
+      "selfWorth": 1.4,
+      "motivation": 1.0,
+      "pattern": 1.0
+    },
+    "motivation": {
+      "selfWorth": 1.0,
+      "motivation": 1.4,
+      "pattern": 1.0
+    },
+    "pattern": {
+      "selfWorth": 1.0,
+      "motivation": 1.0,
+      "pattern": 1.4
+    },
+    "integrated": {
+      "selfWorth": 1.2,
+      "motivation": 1.2,
+      "pattern": 1.2
+    }
+  },
+  "difficulty": {
+    "minTier": 1,
+    "maxTier": 4,
+    "securePenaltyPerTier": 0.04
+  },
+  "perkRarityWeights": {
+    "Common": 5,
+    "Rare": 3,
+    "Epic": 1
+  },
+  "phase2Loop": {
+    "turnsPerDay": 5,
+    "baseSecureProgress": 35
+  },
+  "persistenceKey": "hearth_phase2_progression_v1"
+}
