@@ -363,6 +363,7 @@ body {
 }
 
 @media (max-width: 640px) {
+<<<<<<< HEAD
   .lang-toggle-btn {
     top: 10px;
     right: 10px;
@@ -370,6 +371,8 @@ body {
     font-size: 0.85rem;
   }
 
+=======
+>>>>>>> 884285805ef3403645f0b75a14700e125d80ddf8
   .app-shell {
     padding: 20px 12px 36px;
   }
