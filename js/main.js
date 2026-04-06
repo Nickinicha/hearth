@@ -247,6 +247,7 @@ function updateMoodIndicator(moodValue) {
     reaching: "🌓",
     warm: "🌕",
     still: "🍃",
+    cosmic: "✨",
     peaceful: "☀️",
     moving: "🌱"
   };
@@ -406,6 +407,11 @@ function refreshCurrentView() {
     case "scene":
       renderScene(getSceneById(currentSceneId) ?? PHASE_1_SCENES[0]);
       break;
+    case "breathing": {
+      const breathingScene = getSceneById(currentSceneId) ?? PHASE_1_SCENES[0];
+      renderBreathingScene(breathingScene);
+      break;
+    }
     case "summary":
       renderPhaseOneSummary();
       break;
@@ -431,6 +437,53 @@ function refreshCurrentView() {
     default:
       break;
   }
+}
+
+function renderBreathingScene(scene) {
+  viewMode = "breathing";
+  updateUiPreferenceButtonVisibility();
+  hidePhaseTwoMeta();
+  phaseLabel.textContent = t(scene.phaseLabel ?? { EN: "Interlude", TH: "ช่วงพักใจ" });
+  sceneLabel.textContent = t(scene.sceneLabel ?? { EN: "Breathing", TH: "หายใจ" });
+  sceneTitle.textContent = t(scene.title ?? { EN: "Breathing Space", TH: "พักหายใจ" });
+  sceneDescription.textContent = t(scene.description);
+  if (sceneChoicePrompt) {
+    sceneChoicePrompt.textContent = "";
+  }
+  applySceneTint(scene.backgroundTint ?? "#0a0a1a", scene.tintOpacity ?? 0.5);
+  updateMoodIndicator(scene.mood ?? "cosmic");
+  showInternalNote(null);
+  resultText.textContent = "";
+  restartButton.hidden = true;
+
+  const steps = Array.isArray(scene.breathInstruction) ? scene.breathInstruction : null;
+  const chosen = steps ? steps : (scene.breathInstruction ? t(scene.breathInstruction) : "");
+  const lines = Array.isArray(chosen) ? chosen : [chosen];
+  choiceContainer.innerHTML = "";
+  lines.forEach((line) => {
+    const p = document.createElement("p");
+    p.className = "chapter-recap-line";
+    p.style.fontSize = "1rem";
+    p.style.margin = "6px 0";
+    p.textContent = line;
+    choiceContainer.appendChild(p);
+  });
+  const continueBtn = document.createElement("button");
+  continueBtn.type = "button";
+  continueBtn.className = "choice-btn";
+  continueBtn.textContent = t(scene.continueLabel ?? { EN: "Continue", TH: "ไปต่อ" });
+  continueBtn.addEventListener("click", () => {
+    const nextScene = scene.next ? getSceneById(scene.next) : null;
+    if (!nextScene || nextScene.isSummary) {
+      showSummary();
+      return;
+    }
+    currentSceneId = nextScene.id;
+    currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((entry) => entry.id === nextScene.id));
+    renderScene(nextScene);
+  });
+  choiceContainer.appendChild(continueBtn);
+  replayGalaxyTransition(sceneTitle, sceneDescription, choiceContainer);
 }
 
 async function loadContentModels() {
@@ -1035,7 +1088,13 @@ function renderScene(scene) {
     return;
   }
   if (scene.isSummary) {
-    renderPhaseOneSummary();
+    showSummary();
+    return;
+  }
+  if (scene.isBreathingScene) {
+    currentSceneId = scene.id;
+    currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((entry) => entry.id === scene.id));
+    renderBreathingScene(scene);
     return;
   }
   currentSceneId = scene.id;

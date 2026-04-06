@@ -130,7 +130,7 @@ export const PHASE_1_SCENES = [
       EN: "You open the door slightly: \"I need quiet tonight.\" They answer, \"Okay. I'll be here.\" In that tender pause, your Star Alignment shifts toward Soul Growth.",
       TH: "คุณเปิดประตูนิดหนึ่งแล้วพูดว่า \"คืนนี้ขอความเงียบนะ\" เขา/เธอตอบว่า \"โอเค ฉันอยู่ตรงนี้\" ในช่องว่างที่อ่อนโยนนั้น ดาวภายในคุณค่อยๆ เรียงตัวไปทางการเติบโตของจิตวิญญาณ"
     },
-    choices: [{ id: "s2_space_continue", text: { EN: "Breathe. Let cosmic silence restore you.", TH: "หายใจ แล้วให้ความเงียบระดับจักรวาลฟื้นฟูคุณ" }, effects: { secure: 10 }, next: "scene_3" }]
+    choices: [{ id: "s2_space_continue", text: { EN: "Breathe. Let cosmic silence restore you.", TH: "หายใจ แล้วให้ความเงียบระดับจักรวาลฟื้นฟูคุณ" }, effects: { secure: 10 }, next: "scene_breath" }]
   },
   {
     id: "scene_2b_reach",
@@ -145,7 +145,7 @@ export const PHASE_1_SCENES = [
       EN: "You open the door fully. No grand speech, just presence. Their nearness steadies your Cosmic Energy, like two stars finding alignment in one quiet orbit.",
       TH: "คุณเปิดประตูเต็มที่ ไม่มีคำพูดใหญ่โต มีแค่การอยู่ตรงนั้น ความใกล้ของเขา/เธอทำให้พลังจักรวาลในตัวคุณนิ่งลง เหมือนดาวสองดวงที่ค่อยๆ เรียงจังหวะกันในวงโคจรเดียว"
     },
-    choices: [{ id: "s2_reach_continue", text: { EN: "Rest in that shared, starlit silence.", TH: "พักอยู่ในความเงียบที่มีแสงดาวร่วมกัน" }, effects: { secure: 10 }, next: "scene_3" }]
+    choices: [{ id: "s2_reach_continue", text: { EN: "Rest in that shared, starlit silence.", TH: "พักอยู่ในความเงียบที่มีแสงดาวร่วมกัน" }, effects: { secure: 10 }, next: "scene_breath" }]
   },
   {
     id: "scene_2b_fear",
@@ -160,7 +160,31 @@ export const PHASE_1_SCENES = [
       EN: "You apologize right away. They gently stop you: \"You don't owe me a constant signal.\" Their kindness feels like unexpected Cosmic Energy guiding Soul Growth.",
       TH: "คุณขอโทษทันที เขา/เธอหยุดคุณเบาๆ ว่า \"เธอไม่ต้องส่งสัญญาณตลอดเวลา\" ความอ่อนโยนนั้นเหมือนพลังจักรวาลที่มาไม่ทันตั้งตัว และพาใจคุณไปทางการเติบโตของจิตวิญญาณ"
     },
-    choices: [{ id: "s2_fear_continue", text: { EN: "Let that kindness in; trust the stars.", TH: "รับความกรุณานั้นเข้ามา แล้ววางใจในดาวของคุณ" }, effects: { secure: 15, anxious: -10 }, next: "scene_3" }]
+    choices: [{ id: "s2_fear_continue", text: { EN: "Let that kindness in. Really let it in.", TH: "รับความกรุณานั้นเข้ามา รับเข้ามาจริงๆ" }, effects: { secure: 15, anxious: -10 }, next: "scene_breath" }]
+  },
+  {
+    id: "scene_breath",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Interlude", TH: "ช่วงพักใจ" },
+    title: { EN: "Breathing Space", TH: "ช่องว่างของลมหายใจ" },
+    isBreathingScene: true,
+    backgroundTint: "#0a0a1a",
+    tintOpacity: 0.5,
+    mood: "cosmic",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "Before we continue, return to your breath.",
+      TH: "ก่อนจะไปต่อ ลองกลับมาอยู่กับลมหายใจของตัวเอง"
+    },
+    breathInstruction: {
+      EN: ["Breathe in...", "Hold...", "Breathe out...", "You are here."],
+      TH: ["หายใจเข้า...", "กลั้นไว้...", "หายใจออก...", "คุณอยู่ตรงนี้"]
+    },
+    continueLabel: {
+      EN: "I'm ready to continue",
+      TH: "พร้อมแล้ว ไปต่อเลย"
+    },
+    next: "scene_3"
   },
   {
     id: "scene_3",
@@ -209,8 +233,8 @@ export const ATTACHMENT_STYLE_SUMMARIES = {
     icon: "🌑",
     name: { EN: "Solitary Comet", TH: "ดาวหางเดียวดาย (Solitary Comet)" },
     spiritual: {
-      EN: "Celestial Guidance: You are the Solitary Comet. Your Cosmic Energy protects distance with grace; your next Star Alignment asks for Soul Growth through safe closeness.",
-      TH: "คุณพกพาจักรวาลที่เงียบสงบไว้ภายใน แม้ดวงดาวจะดูห่างไกลแต่แสงสว่างในใจคุณนั้นงดงามในความสันโดษ การเปิดรับวงโคจรใหม่ไม่ใช่การสูญเสียตัวตน แต่คือการขยายขอบเขตของหัวใจ"
+      EN: "You carry a quiet, self-sufficient universe inside you. You learned to need very little because needing once felt unsafe. Your growth edge is not to become someone who needs more, but to let what you already feel be known.",
+      TH: "คุณพกพาจักรวาลที่เงียบสงบและพึ่งตัวเองได้ไว้ข้างใน คุณเรียนรู้ที่จะต้องการน้อยมาก เพราะการต้องการ ณ จุดใดจุดหนึ่งในชีวิต มันรู้สึกไม่ปลอดภัย\n\nแต่คุณอยู่ที่นี่ ในเรื่องราวเกี่ยวกับการเชื่อมต่อ บางส่วนของคุณเลือกที่จะอยู่ตรงนี้เอง\n\nสิ่งที่คุณต้องเติบโตไม่ใช่การกลายเป็นคนที่ต้องการมากขึ้น แต่คือการเรียนรู้ที่จะให้สิ่งที่คุณรู้สึกอยู่แล้วนั้น ได้รับการรับรู้\n\n✦ ดาวไม่ได้หรี่แสงลงเพื่อให้คนอื่นดูสว่างกว่า และคุณก็ไม่จำเป็นต้องหายไปเพื่อรักษาความสงบ"
     }
   },
   fearful: {
