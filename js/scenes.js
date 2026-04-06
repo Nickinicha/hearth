@@ -10,21 +10,21 @@ export const PHASE_1_SCENES = [
       TH: "ฉากที่ 1 จาก 3"
     },
     title: {
-      EN: "The First Message",
-      TH: "ข้อความแรก"
+      EN: "The Hearth",
+      TH: "ข้างกองไฟ"
     },
     description: {
       EN:
-        "A match you genuinely like has not replied for 6 hours. What do you do next?",
+        "The fire crackles softly as evening settles in. Warmth returns, but uncertainty still lingers in your chest. What do you do first?",
       TH:
-        "คนที่คุณไม่ได้แค่เล่นๆ ยังไม่ตอบข้อความมา 6 ชั่วโมงแล้ว คุณจะทำอย่างไรต่อ?"
+        "เสียงฟืนแตกเบาๆ ยามเย็นค่อยๆ คลุมห้อง ความอบอุ่นกลับมา แต่ลึกๆ ยังมีความไม่แน่ใจค้างอยู่ในอก คุณจะเริ่มจากอะไร?"
     },
     choices: [
       {
         id: "double-text",
         text: {
-          EN: "Send another message to make sure they do not forget me.",
-          TH: "ส่งข้อความอีกครั้งเพื่อไม่ให้เขาลืมฉัน"
+          EN: "Send another message right away, so they do not forget me.",
+          TH: "ส่งข้อความซ้ำทันที เผื่อเขา/เธอจะไม่ลืมเรา"
         },
         archetypeHint: "The Seeker",
         styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
@@ -33,8 +33,8 @@ export const PHASE_1_SCENES = [
       {
         id: "balanced-checkin",
         text: {
-          EN: "Take a breath, continue my day, and send one clear check-in later.",
-          TH: "หายใจลึกๆ ใช้ชีวิตตามปกติ แล้วค่อยส่งข้อความเช็กอินที่ชัดเจนทีหลัง"
+          EN: "Take a breath, continue your evening, and send one clear check-in later.",
+          TH: "หายใจลึกๆ แล้วกลับไปใช้เวลาของตัวเองก่อน ค่อยส่งข้อความสั้นๆ ที่ชัดเจนทีหลัง"
         },
         archetypeHint: "The Anchor",
         styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
@@ -43,8 +43,8 @@ export const PHASE_1_SCENES = [
       {
         id: "pull-away",
         text: {
-          EN: "Assume they are not serious and emotionally pull away immediately.",
-          TH: "สรุปว่าเขาไม่จริงจัง แล้วถอยความรู้สึกทันที"
+          EN: "Assume they are not serious, then pull back emotionally.",
+          TH: "คิดไปก่อนว่าเขา/เธอไม่จริงจัง แล้วถอยความรู้สึกทันที"
         },
         archetypeHint: "The Builder",
         styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
@@ -53,8 +53,8 @@ export const PHASE_1_SCENES = [
       {
         id: "mixed-signal",
         text: {
-          EN: "Want closeness but feel unsafe, so I stay silent and overthink.",
-          TH: "อยากใกล้แต่รู้สึกไม่ปลอดภัย เลยเงียบและคิดวนไปเอง"
+          EN: "Want closeness but feel unsafe, so you stay quiet and overthink.",
+          TH: "ก็อยากใกล้ แต่ก็ไม่ค่อยปลอดภัยในใจ เลยเงียบและคิดวนอยู่คนเดียว"
         },
         archetypeHint: "The Nurturer",
         styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
@@ -63,7 +63,7 @@ export const PHASE_1_SCENES = [
     ]
   },
   {
-    id: "p1s2-boundary",
+    id: "p1s2-emotional-mirror",
     phaseLabel: {
       EN: "Phase 1 - Self Discovery",
       TH: "เฟส 1 – ค้นพบตัวเอง"
@@ -73,51 +73,51 @@ export const PHASE_1_SCENES = [
       TH: "ฉากที่ 2 จาก 3"
     },
     title: {
-      EN: "The Boundary Moment",
-      TH: "จุดที่ต้องตั้งขอบเขต"
+      EN: "The Emotional Mirror",
+      TH: "กระจกสะท้อนอารมณ์"
     },
     description: {
       EN:
-        "Someone you like asks for more access to your time than you can give this week. How do you respond?",
+        "You have barely spoken since getting home. Your partner notices, not to pressure you, but because they are afraid of losing you to silence. How do you respond?",
       TH:
-        "คนที่คุณชอบขอเวลาคุณมากกว่าที่คุณมีในสัปดาห์นี้ คุณจะตอบรับอย่างไร?"
+        "ตั้งแต่กลับบ้านมาคุณแทบไม่พูดอะไรเลย คนรักสังเกตเห็น และไม่อยากปล่อยผ่าน ไม่ใช่เพราะจะกดดันคุณ แต่เพราะกลัวว่าจะเข้าไม่ถึงคุณอีกต่อไป คุณจะตอบอย่างไร?"
     },
     choices: [
       {
-        id: "over-give",
+        id: "mirror-open",
         text: {
-          EN: "Say yes to everything so they will not lose interest in me.",
-          TH: "ตอบตกลงทุกอย่างเพื่อไม่ให้เขาหมดความสนใจ"
-        },
-        archetypeHint: "The Seeker",
-        styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
-        dimensions: { selfWorth: -2, motivation: -1, pattern: -2 }
-      },
-      {
-        id: "clear-boundary",
-        text: {
-          EN: "Be warm and honest: set a clear boundary, suggest another time.",
-          TH: "อบอุ่นและตรงไปตรงมา: ตั้งขอบเขตชัดเจน ชวนหาเวลาอื่นแทน"
+          EN: "\"I just need a moment... but I'll tell you soon.\"",
+          TH: "\"ขอเวลาแป๊บนึงนะ แต่เดี๋ยวจะเล่าให้ฟัง\""
         },
         archetypeHint: "The Anchor",
         styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
         dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
       },
       {
-        id: "detach-fast",
+        id: "mirror-deflect",
         text: {
-          EN: "Feel pressured and shut down the connection before discussing it.",
-          TH: "รู้สึกถูกกดดันจนปิดโอกาสคุยก่อนจะได้พูดกัน"
+          EN: "\"It's nothing. Don't worry about it.\"",
+          TH: "\"ไม่เป็นไรหรอก อย่าคิดมาก\""
         },
         archetypeHint: "The Builder",
         styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
         dimensions: { selfWorth: 0, motivation: -1, pattern: -1 }
       },
       {
-        id: "conflicted-boundary",
+        id: "mirror-honest-needs",
         text: {
-          EN: "Need closeness but fear conflict, so avoid replying for a while.",
-          TH: "อยากใกล้แต่กลัวขัดแย้ง เลยตอบช้าหรือเงียบไปก่อน"
+          EN: "\"Honestly? Sit with me. No questions for now.\"",
+          TH: "\"จริงๆ แค่อยากให้นั่งอยู่ข้างๆ ก่อน ยังไม่ต้องถามอะไร\""
+        },
+        archetypeHint: "The Anchor",
+        styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
+        dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
+      },
+      {
+        id: "mirror-freeze",
+        text: {
+          EN: "You freeze, stay silent, and wait for them to lead everything.",
+          TH: "ชะงัก เงียบ และปล่อยให้อีกฝ่ายนำทุกอย่างไปก่อน"
         },
         archetypeHint: "The Nurturer",
         styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
@@ -136,21 +136,21 @@ export const PHASE_1_SCENES = [
       TH: "ฉากที่ 3 จาก 3"
     },
     title: {
-      EN: "After a Misunderstanding",
-      TH: "หลังความเข้าใจคลาดเคลื่อน"
+      EN: "After the Mirror",
+      TH: "หลังมองเห็นกัน"
     },
     description: {
       EN:
-        "A small conflict happens and both of you feel misunderstood. What is your first move?",
+        "The moment passes. You can either repair gently, withdraw again, or stay present in quiet connection. What is your next move?",
       TH:
-        "มีเรื่องเล็กน้อยคาใจ ทั้งคู่รู้สึกว่าถูกเข้าใจผิด คุณจะลงมือแบบไหนเป็นอย่างแรก?"
+        "ช่วงเวลานั้นผ่านไปแล้ว ตอนนี้คุณมีทางเลือก: ค่อยๆ ซ่อมความสัมพันธ์ ถอยกลับเข้าเปลือกเดิม หรืออยู่ตรงนี้ด้วยกันอย่างสงบ คุณจะเลือกแบบไหน?"
     },
     choices: [
       {
         id: "chase-reassurance",
         text: {
-          EN: "Push for immediate reassurance because uncertainty feels unbearable.",
-          TH: "เร่งขอความมั่นใจทันทีเพราะความไม่แน่นหนาทนไม่ไหว"
+          EN: "Push for immediate reassurance because uncertainty still feels unbearable.",
+          TH: "เร่งขอความมั่นใจทันที เพราะความไม่ชัดยังหนักเกินจะทน"
         },
         archetypeHint: "The Seeker",
         styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
@@ -159,8 +159,8 @@ export const PHASE_1_SCENES = [
       {
         id: "repair-openly",
         text: {
-          EN: "Pause, regulate, then name feelings and invite a calm repair talk.",
-          TH: "หยุดพัก ปรับอารมณ์ แล้วพูดความรู้สึกชัดเชิญชวนคุยซ่อมความสัมพันธ์อย่างสงบ"
+          EN: "Speak softly and honestly: name your feelings, and invite a calm repair talk.",
+          TH: "พูดด้วยน้ำเสียงเบาและจริงใจ บอกความรู้สึกตรงๆ แล้วชวนคุยซ่อมความสัมพันธ์อย่างสงบ"
         },
         archetypeHint: "The Anchor",
         styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
@@ -169,8 +169,8 @@ export const PHASE_1_SCENES = [
       {
         id: "stonewall",
         text: {
-          EN: "Withdraw and focus on being independent so I cannot be hurt.",
-          TH: "ถอยและเน้นเป็นอิสระเพื่อไม่ให้ตัวเองเจ็บ"
+          EN: "Withdraw again and protect yourself by shutting the door emotionally.",
+          TH: "ถอยอีกครั้ง และปิดประตูทางอารมณ์เพื่อกันตัวเองไม่ให้เจ็บ"
         },
         archetypeHint: "The Builder",
         styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
@@ -179,8 +179,8 @@ export const PHASE_1_SCENES = [
       {
         id: "freeze-cycle",
         text: {
-          EN: "Want to reconnect but freeze from fear, waiting for them to lead.",
-          TH: "อยากเชื่อมใหม่แต่ชะงักเพราะกลัว รอให้อีกฝ่ายเป็นฝ่ายเริ่มก่อน"
+          EN: "Want to reconnect, but fear takes over, so you wait in silence.",
+          TH: "จริงๆ ก็อยากเชื่อมใหม่ แต่ความกลัวนำหน้า เลยเงียบและรอไปก่อน"
         },
         archetypeHint: "The Nurturer",
         styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
