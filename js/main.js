@@ -29,7 +29,10 @@ let viewMode = "scene";
 const PROGRESSION_STORAGE_KEY = "hearth_phase2_progression_v1";
 const PHASE_2_START_CHAPTER = 4;
 const PHASE_2_FINAL_CHAPTER = 10;
-const PHASE_1_TRANSITION_MS = 700;
+const CINEMATIC_SCENE_TRANSITION_MS = 900;
+const CINEMATIC_TYPEWORD_MS = 34;
+const CINEMATIC_ORB_STAGGER_MS = 70;
+const CINEMATIC_CONSTELLATION_FADE_MS = 700;
 const DEFAULT_WORLD_MAP = { chapters: [] };
 const DEFAULT_SYSTEMS = {
   dimensionWeightsByFocus: {
@@ -279,7 +282,7 @@ function stopTypewriter() {
 
 function typeTextWordByWord(targetEl, text, options = {}) {
   const words = String(text ?? "").split(/\s+/).filter(Boolean);
-  const intervalMs = options.intervalMs ?? 45;
+  const intervalMs = options.intervalMs ?? CINEMATIC_TYPEWORD_MS;
   targetEl.textContent = "";
   if (words.length === 0) {
     return Promise.resolve();
@@ -485,14 +488,14 @@ function triggerConstellationFlash() {
   });
 
   constellationCanvas.style.opacity = "0.5";
-  constellationCanvas.style.transition = "opacity 700ms ease";
+  constellationCanvas.style.transition = `opacity ${CINEMATIC_CONSTELLATION_FADE_MS}ms ease`;
   constellationFlashTimer = window.setTimeout(() => {
     constellationCanvas.style.opacity = "0";
     window.setTimeout(() => {
       if (constellationCtx) {
         constellationCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       }
-    }, 700);
+    }, CINEMATIC_CONSTELLATION_FADE_MS);
   }, 140);
 }
 
@@ -581,6 +584,17 @@ function renderBreathingScene(scene) {
   continueBtn.className = "choice-btn";
   continueBtn.textContent = t(scene.continueLabel ?? { EN: "Continue", TH: "ไปต่อ" });
   continueBtn.addEventListener("click", () => {
+    if (scene.effects) {
+      engine.applyChoice(
+        normalizeChoiceForEngine({
+          id: `${scene.id}-breath`,
+          text: t(scene.title ?? { EN: "Breathing", TH: "หายใจ" }),
+          effects: scene.effects
+        }),
+        { dimensionWeights: {} }
+      );
+      renderStatus();
+    }
     const nextScene = scene.next ? getSceneById(scene.next) : null;
     if (!nextScene || nextScene.isSummary) {
       showSummary();
@@ -1190,7 +1204,7 @@ function handleChoice(choice) {
     currentSceneId = nextScene.id;
     currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((scene) => scene.id === currentSceneId));
     renderScene(nextScene);
-  }, PHASE_1_TRANSITION_MS);
+  }, CINEMATIC_SCENE_TRANSITION_MS);
 }
 
 function renderScene(scene) {
@@ -1228,7 +1242,7 @@ function renderScene(scene) {
 
   choiceContainer.innerHTML = "";
   choiceContainer.style.opacity = "0";
-  typeTextWordByWord(sceneDescription, t(scene.description), { intervalMs: 32 }).then(() => {
+  typeTextWordByWord(sceneDescription, t(scene.description), { intervalMs: CINEMATIC_TYPEWORD_MS }).then(() => {
     scene.choices.forEach((choice, index) => {
       const wrapper = document.createElement("div");
       wrapper.className = "orb-wrapper";
@@ -1264,7 +1278,7 @@ function renderScene(scene) {
 
       window.setTimeout(() => {
         wrapper.classList.add("revealed");
-      }, 40 * index);
+      }, CINEMATIC_ORB_STAGGER_MS * index);
     });
     choiceContainer.style.opacity = "1";
   });
