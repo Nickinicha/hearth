@@ -167,7 +167,7 @@ const phase2TurnLabel = document.querySelector("#phase2TurnLabel");
 const phase2ProgressFill = document.querySelector("#phase2ProgressFill");
 const phase2ProgressText = document.querySelector("#phase2ProgressText");
 const langToggleBtn = document.querySelector("#langToggleBtn");
-const starfieldCanvas = document.querySelector("#starfieldCanvas");
+const starfieldCanvas = document.querySelector("#starfieldCanvas") || document.querySelector("#star-canvas");
 const constellationCanvas = document.querySelector("#constellationCanvas");
 const tintOverlay = document.querySelector("#tintOverlay");
 const moodIndicator = document.querySelector("#moodIndicator");
@@ -486,6 +486,16 @@ function normalizeChoiceForEngine(choice) {
     styleImpact: getAttachmentStyleFromEffects(choice.effects ?? {}),
     dimensions: { selfWorth: 0, motivation: 0, pattern: 0 }
   };
+}
+
+function calculateAttachmentStyle() {
+  const state = engine.getState();
+  const topStyle = ATTACHMENT_STYLES.reduce((best, current) => {
+    const bestScore = state.scores[best] ?? Number.NEGATIVE_INFINITY;
+    const currentScore = state.scores[current] ?? Number.NEGATIVE_INFINITY;
+    return currentScore > bestScore ? current : best;
+  }, ATTACHMENT_STYLES[0]);
+  return { topStyle, scores: state.scores };
 }
 
 function getNextChapterPolicy(currentChapterIndex) {
@@ -1061,15 +1071,52 @@ function renderScene(scene) {
 }
 
 function renderPhaseOneSummary() {
+  showSummary();
+}
+
+function renderSummaryBars(scores) {
+  choiceContainer.innerHTML = "";
+  const values = ATTACHMENT_STYLES.map((style) => ({
+    style,
+    score: Math.max(0, scores[style] ?? 0)
+  }));
+  const maxScore = Math.max(1, ...values.map((entry) => entry.score));
+
+  values.forEach(({ style, score }) => {
+    const row = document.createElement("div");
+    row.className = "chapter-recap-card";
+    row.style.padding = "10px 12px";
+
+    const label = document.createElement("p");
+    label.className = "chapter-recap-line";
+    label.style.marginBottom = "8px";
+    label.textContent = `${labelStyle(style)}: ${score}`;
+
+    const track = document.createElement("div");
+    track.className = "progress-track";
+    track.style.height = "8px";
+
+    const fill = document.createElement("div");
+    fill.className = "progress-fill";
+    fill.style.width = `${Math.max(4, Math.round((score / maxScore) * 100))}%`;
+
+    track.appendChild(fill);
+    row.appendChild(label);
+    row.appendChild(track);
+    choiceContainer.appendChild(row);
+  });
+}
+
+function showSummary() {
   viewMode = "summary";
   updateUiPreferenceButtonVisibility();
   hidePhaseTwoMeta();
+  const { topStyle, scores } = calculateAttachmentStyle();
   const state = engine.getState();
-  const dominantStyle = engine.getTopAttachmentStyle();
   const dominantArchetype = engine.getTopArchetype();
   const dominantPattern = engine.getDerivedPattern();
   const scoreSummary = getScoreSummary(state);
-  const styleSummary = ATTACHMENT_STYLE_SUMMARIES[dominantStyle];
+  const styleSummary = ATTACHMENT_STYLE_SUMMARIES[topStyle];
 
   phaseLabel.textContent = t({ EN: "Celestial Guidance", TH: "คำชี้นำแห่งท้องฟ้า" });
   sceneLabel.textContent = t({ EN: "Star Alignment Reading", TH: "การอ่านแนวเรียงตัวแห่งดวงดาว" });
@@ -1077,7 +1124,8 @@ function renderPhaseOneSummary() {
   sceneDescription.textContent = styleSummary
     ? `${styleSummary.icon} ${t(styleSummary.spiritual)}`
     : t(UI.summaryIntro);
-  choiceContainer.innerHTML = "";
+
+  renderSummaryBars(scores);
 
   resultText.textContent = formatUi(
     {
@@ -1085,7 +1133,7 @@ function renderPhaseOneSummary() {
       TH: "แนวโน้มพลังจักรวาล: {style} การเรียงตัวของดาวสะท้อน {archetype} พร้อมวิถี {pattern} สัญญาณการเติบโตของจิตวิญญาณ -> {scores}"
     },
     {
-      style: styleSummary ? t(styleSummary.name) : labelStyle(dominantStyle),
+      style: styleSummary ? t(styleSummary.name) : labelStyle(topStyle),
       archetype: labelArchetype(dominantArchetype),
       pattern: labelPattern(dominantPattern),
       scores: scoreSummary
@@ -1094,7 +1142,7 @@ function renderPhaseOneSummary() {
 
   restartButton.hidden = false;
   restartButton.textContent = t({ EN: "Restart Story", TH: "เริ่มเรื่องใหม่" });
-  replayGalaxyTransition(sceneTitle, sceneDescription, resultText);
+  replayGalaxyTransition(sceneTitle, sceneDescription, choiceContainer, resultText);
 }
 
 function renderPhaseTwoTurn(options = {}) {

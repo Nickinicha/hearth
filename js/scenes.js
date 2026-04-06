@@ -210,7 +210,7 @@ export const ATTACHMENT_STYLE_SUMMARIES = {
     name: { EN: "Solitary Comet", TH: "ดาวหางเดียวดาย (Solitary Comet)" },
     spiritual: {
       EN: "Celestial Guidance: You are the Solitary Comet. Your Cosmic Energy protects distance with grace; your next Star Alignment asks for Soul Growth through safe closeness.",
-      TH: "คำชี้นำแห่งท้องฟ้า: คุณคือดาวหางเดียวดาย พลังจักรวาลของคุณปกป้องระยะห่างอย่างสง่างาม การเรียงตัวของดาวครั้งถัดไปชวนให้จิตวิญญาณเติบโตผ่านความใกล้ชิดที่ปลอดภัย"
+      TH: "คุณพกพาจักรวาลที่เงียบสงบไว้ภายใน แม้ดวงดาวจะดูห่างไกลแต่แสงสว่างในใจคุณนั้นงดงามในความสันโดษ การเปิดรับวงโคจรใหม่ไม่ใช่การสูญเสียตัวตน แต่คือการขยายขอบเขตของหัวใจ"
     }
   },
   fearful: {
