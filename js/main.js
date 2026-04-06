@@ -14,7 +14,7 @@ import {
   UI,
   formatUi
 } from "./config.js";
-import { PHASE_1_SCENES } from "./scenes.js";
+import { PHASE_1_SCENES, ATTACHMENT_STYLE_SUMMARIES } from "./scenes.js";
 import {
   getPhaseTwoChoices,
   getTurnScenario,
@@ -24,6 +24,7 @@ import {
 
 const engine = new GameEngine();
 let currentSceneIndex = 0;
+let currentSceneId = PHASE_1_SCENES[0]?.id ?? null;
 let viewMode = "scene";
 const PROGRESSION_STORAGE_KEY = "hearth_phase2_progression_v1";
 const PHASE_2_START_CHAPTER = 4;
@@ -261,7 +262,7 @@ function refreshCurrentView() {
   applyShellI18n();
   switch (viewMode) {
     case "scene":
-      renderScene(PHASE_1_SCENES[currentSceneIndex]);
+      renderScene(getSceneById(currentSceneId) ?? PHASE_1_SCENES[0]);
       break;
     case "summary":
       renderPhaseOneSummary();
@@ -319,6 +320,30 @@ function getCurrentPhaseTwoChapter() {
 
 function getPhaseOneChapterForScene(sceneIndex) {
   return getChapterByOrder(sceneIndex + 1);
+}
+
+function getSceneById(sceneId) {
+  return PHASE_1_SCENES.find((scene) => scene.id === sceneId) ?? null;
+}
+
+function getAttachmentStyleFromEffects(effects = {}) {
+  return {
+    anxious: effects.anxious ?? 0,
+    secure: effects.secure ?? 0,
+    avoidant: effects.avoidant ?? 0,
+    fearful: effects.fearful ?? 0
+  };
+}
+
+function normalizeChoiceForEngine(choice) {
+  if (choice.styleImpact || choice.dimensions) {
+    return choice;
+  }
+  return {
+    ...choice,
+    styleImpact: getAttachmentStyleFromEffects(choice.effects ?? {}),
+    dimensions: { selfWorth: 0, motivation: 0, pattern: 0 }
+  };
 }
 
 function getNextChapterPolicy(currentChapterIndex) {
@@ -827,30 +852,41 @@ function handleChoice(choice) {
   isPhaseOneTransitioning = true;
   const chapter = getPhaseOneChapterForScene(currentSceneIndex);
   const dimensionWeights = getDimensionWeightsForChapter(chapter);
-  engine.applyChoice(choice, { dimensionWeights });
+  engine.applyChoice(normalizeChoiceForEngine(choice), { dimensionWeights });
   applySceneTint(choice.tint ?? chapter?.backgroundTint ?? null, choice.tintOpacity ?? chapter?.tintOpacity ?? 0);
   updateMoodIndicator(choice.mood ?? chapter?.mood ?? "neutral");
   showInternalNote(choice.internalNote);
   renderStatus();
   choiceContainer.innerHTML = "";
   restartButton.hidden = true;
-  const isLastScene = currentSceneIndex >= PHASE_1_SCENES.length - 1;
-  resultText.textContent = isLastScene
+  const nextScene = choice.next ? getSceneById(choice.next) : null;
+  const isSummaryNext = !nextScene || nextScene.isSummary;
+  resultText.textContent = isSummaryNext
     ? t(UI.phase1TransitionSummary)
-    : formatUi(UI.phase1TransitionNext, { n: currentSceneIndex + 2 });
+    : t({ EN: "Choice received. Moving to next scene...", TH: "รับคำตอบแล้ว กำลังไปฉากถัดไป..." });
 
   window.setTimeout(() => {
     isPhaseOneTransitioning = false;
-    if (isLastScene) {
+    if (isSummaryNext) {
       renderPhaseOneSummary();
       return;
     }
-    currentSceneIndex += 1;
-    renderScene(PHASE_1_SCENES[currentSceneIndex]);
+    currentSceneId = nextScene.id;
+    currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((scene) => scene.id === currentSceneId));
+    renderScene(nextScene);
   }, PHASE_1_TRANSITION_MS);
 }
 
 function renderScene(scene) {
+  if (!scene) {
+    return;
+  }
+  if (scene.isSummary) {
+    renderPhaseOneSummary();
+    return;
+  }
+  currentSceneId = scene.id;
+  currentSceneIndex = Math.max(0, PHASE_1_SCENES.findIndex((entry) => entry.id === scene.id));
   viewMode = "scene";
   updateUiPreferenceButtonVisibility();
   hidePhaseTwoMeta();
@@ -889,11 +925,14 @@ function renderPhaseOneSummary() {
   const dominantArchetype = engine.getTopArchetype();
   const dominantPattern = engine.getDerivedPattern();
   const scoreSummary = getScoreSummary(state);
+  const styleSummary = ATTACHMENT_STYLE_SUMMARIES[dominantStyle];
 
   phaseLabel.textContent = t(UI.phase1Complete);
-  sceneLabel.textContent = t(UI.playerProfileSummary);
+  sceneLabel.textContent = t({ EN: "Spiritual Reflection", TH: "ภาพสะท้อนทางจิตวิญญาณ" });
   sceneTitle.textContent = t(UI.emotionalBlueprint);
-  sceneDescription.textContent = t(UI.summaryIntro);
+  sceneDescription.textContent = styleSummary
+    ? `${styleSummary.icon} ${t(styleSummary.spiritual)}`
+    : t(UI.summaryIntro);
   choiceContainer.innerHTML = "";
 
   resultText.textContent = formatUi(UI.summaryPrimaryLine, {
@@ -904,7 +943,7 @@ function renderPhaseOneSummary() {
   });
 
   restartButton.hidden = false;
-  restartButton.textContent = t(UI.startPhase2);
+  restartButton.textContent = t({ EN: "Restart Story", TH: "เริ่มเรื่องใหม่" });
 }
 
 function renderPhaseTwoTurn(options = {}) {
@@ -1475,6 +1514,7 @@ function resetEntireRun() {
   const preservedUiPreference = progression.showPerkDetails;
   engine.reset();
   currentSceneIndex = 0;
+  currentSceneId = PHASE_1_SCENES[0]?.id ?? null;
   Object.assign(progression, structuredClone(DEFAULT_PROGRESSION));
   progression.showPerkDetails = preservedUiPreference;
   saveProgression();
@@ -1492,7 +1532,7 @@ function resetEntireRun() {
   phaseTwoSession.lastTurnSnapshot = null;
   phaseTwoSession.feedbackSecureShiftScore = null;
   phaseTwoDaySummaryPaintPayload = null;
-  renderScene(PHASE_1_SCENES[currentSceneIndex]);
+  renderScene(getSceneById(currentSceneId) ?? PHASE_1_SCENES[0]);
 }
 
 function resetUiPreferences() {
@@ -1506,7 +1546,7 @@ function resetUiPreferences() {
 
 restartButton.addEventListener("click", () => {
   if (viewMode === "summary") {
-    startNextPhaseTwoDay();
+    resetEntireRun();
     return;
   }
 
@@ -1532,7 +1572,9 @@ restartButton.addEventListener("click", () => {
 
   if (currentSceneIndex < PHASE_1_SCENES.length - 1) {
     currentSceneIndex += 1;
-    renderScene(PHASE_1_SCENES[currentSceneIndex]);
+    const fallbackScene = PHASE_1_SCENES[currentSceneIndex];
+    currentSceneId = fallbackScene?.id ?? currentSceneId;
+    renderScene(fallbackScene);
     return;
   }
 
@@ -1557,7 +1599,7 @@ async function bootstrap() {
     });
   }
   applyShellI18n();
-  renderScene(PHASE_1_SCENES[currentSceneIndex]);
+  renderScene(getSceneById(currentSceneId) ?? PHASE_1_SCENES[0]);
 }
 
 bootstrap();

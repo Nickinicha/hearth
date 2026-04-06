@@ -1,213 +1,224 @@
 export const PHASE_1_SCENES = [
   {
-    id: "p1s1-intro",
-    phaseLabel: {
-      EN: "Phase 1 - Self Discovery",
-      TH: "เฟส 1 – ค้นพบตัวเอง"
-    },
-    sceneLabel: {
-      EN: "Scene 1 of 3",
-      TH: "ฉากที่ 1 จาก 3"
-    },
-    title: {
-      EN: "The Hearth",
-      TH: "ข้างกองไฟ"
-    },
-    description: {
-      EN:
-        "The fire crackles softly as evening settles in. Warmth returns, but uncertainty still lingers in your chest. What do you do first?",
-      TH:
-        "เสียงฟืนแตกเบาๆ ยามเย็นค่อยๆ คลุมห้อง ความอบอุ่นกลับมา แต่ลึกๆ ยังมีความไม่แน่ใจค้างอยู่ในอก คุณจะเริ่มจากอะไร?"
-    },
-    choices: [
-      {
-        id: "double-text",
-        text: {
-          EN: "Send another message right away, so they do not forget me.",
-          TH: "ส่งข้อความซ้ำทันที เผื่อเขา/เธอจะไม่ลืมเรา"
-        },
-        archetypeHint: "The Seeker",
-        styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
-        dimensions: { selfWorth: -1, motivation: -1, pattern: -2 }
-      },
-      {
-        id: "balanced-checkin",
-        text: {
-          EN: "Take a breath, continue your evening, and send one clear check-in later.",
-          TH: "หายใจลึกๆ แล้วกลับไปใช้เวลาของตัวเองก่อน ค่อยส่งข้อความสั้นๆ ที่ชัดเจนทีหลัง"
-        },
-        archetypeHint: "The Anchor",
-        styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
-        dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
-      },
-      {
-        id: "pull-away",
-        text: {
-          EN: "Assume they are not serious, then pull back emotionally.",
-          TH: "คิดไปก่อนว่าเขา/เธอไม่จริงจัง แล้วถอยความรู้สึกทันที"
-        },
-        archetypeHint: "The Builder",
-        styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
-        dimensions: { selfWorth: 0, motivation: -1, pattern: -1 }
-      },
-      {
-        id: "mixed-signal",
-        text: {
-          EN: "Want closeness but feel unsafe, so you stay quiet and overthink.",
-          TH: "ก็อยากใกล้ แต่ก็ไม่ค่อยปลอดภัยในใจ เลยเงียบและคิดวนอยู่คนเดียว"
-        },
-        archetypeHint: "The Nurturer",
-        styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
-        dimensions: { selfWorth: -1, motivation: -2, pattern: -2 }
-      }
-    ]
-  },
-  {
-    id: "p1s2-emotional-mirror",
-    phaseLabel: {
-      EN: "Phase 1 - Self Discovery",
-      TH: "เฟส 1 – ค้นพบตัวเอง"
-    },
-    sceneLabel: {
-      EN: "Scene 2 of 3",
-      TH: "ฉากที่ 2 จาก 3"
-    },
-    title: {
-      EN: "The Emotional Mirror",
-      TH: "กระจกสะท้อนอารมณ์"
-    },
-    mood: "neutral",
+    id: "scene_1",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 1", TH: "ฉาก 1" },
+    title: { EN: "The First Message", TH: "ข้อความแรก" },
     backgroundTint: null,
     tintOpacity: 0,
-    speaker: {
-      EN: null,
-      TH: null
+    mood: "neutral",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "It's early morning. A message from 2:14 AM waits in first light: \"I kept thinking about what you said. I don't know what to do with that yet.\" You hold the phone before responding.",
+      TH: "เช้าตรู่ ข้อความที่มาถึงตั้งแต่ตีสองสิบสี่นาทีกำลังรออยู่ในแสงเช้า: \"หนูคิดถึงสิ่งที่แกพูดอยู่ตลอด ยังไม่รู้จะรับมือกับมันยังไง\" คุณถือโทรศัพท์ไว้ครู่หนึ่งก่อนตอบ"
     },
     choicePrompt: {
-      EN: "What's sitting in your chest right now?",
-      TH: "ตอนนี้ในอกคุณมีอะไรอยู่?"
-    },
-    description: {
-      EN:
-        "It's 9:47 PM. You're lying on your side, phone screen glowing in the dark. You've opened and closed the same chat three times without typing anything. Somewhere in the next room, you can hear them moving around.",
-      TH:
-        "สี่ทุ่มสี่สิบเจ็ดนาที คุณนอนตะแคงอยู่ หน้าจอโทรศัพท์เรืองแสงในห้องมืด เปิดแล้วปิดหน้าแชทเดิมซ้ำแล้วซ้ำเล่า โดยที่ยังไม่ได้พิมพ์อะไรเลย ได้ยินเสียงเขา/เธอขยับตัวอยู่ในห้องถัดไป"
+      EN: "Something stirs in your chest. What is it?",
+      TH: "มีบางอย่างขยับอยู่ในอก มันคืออะไร?"
     },
     choices: [
       {
-        id: "mirror-open",
-        text: {
-          EN: "Tired. Just... tired.",
-          TH: "เหนื่อย แค่นั้นเลย"
-        },
+        id: "s1_warmth",
+        text: { EN: "Warmth. You feel glad they trusted you with this.", TH: "ความอบอุ่น ดีใจที่เขา/เธอไว้วางใจบอก" },
         internalNote: {
-          EN: "Not angry. Not sad. Just worn out in a way that's hard to explain.",
-          TH: "ไม่ใช่โกรธ ไม่ใช่เศร้า แค่หมดแรงในแบบที่อธิบายยาก"
+          EN: "To receive someone's uncertainty is a quiet form of love.",
+          TH: "การรับความไม่แน่ใจของใครสักคน คือรูปแบบเงียบๆ ของความรัก"
         },
+        effects: { secure: 20 },
+        tint: "#2a1a0a",
+        tintOpacity: 0.15,
+        mood: "warm",
+        next: "scene_2"
+      },
+      {
+        id: "s1_anxious",
+        text: { EN: "Worry. You wonder if they're pulling away.", TH: "กังวล กลัวว่าเขา/เธอกำลังถอยห่าง" },
+        internalNote: {
+          EN: "The mind reaches for certainty when the heart feels unsteady.",
+          TH: "ใจที่ไม่มั่นคงมักพยายามหาความแน่นอนจากภายนอก"
+        },
+        effects: { anxious: 20 },
         tint: "#1a1a2e",
-        tintOpacity: 0.45,
+        tintOpacity: 0.35,
         mood: "heavy",
-        archetypeHint: "The Nurturer",
-        styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
-        dimensions: { selfWorth: -1, motivation: -2, pattern: -2 }
+        next: "scene_2"
       },
       {
-        id: "mirror-deflect",
-        text: {
-          EN: "Like no one really sees me today.",
-          TH: "รู้สึกเหมือนวันนี้ไม่มีใครมองเห็นเราจริงๆ"
-        },
+        id: "s1_still",
+        text: { EN: "Stillness. You let the words settle before reacting.", TH: "ความสงบ ปล่อยให้คำพูดนั้นนิ่งลงก่อนที่จะตอบสนอง" },
         internalNote: {
-          EN: "You were there all day. People looked through you, not at you.",
-          TH: "คุณอยู่ตรงนั้นทั้งวัน แต่คนมองผ่าน ไม่ได้มองที่คุณ"
+          EN: "Not every message needs an immediate answer. Some need space to breathe.",
+          TH: "ไม่ใช่ทุกข้อความที่ต้องการคำตอบทันที บางอย่างต้องการพื้นที่หายใจก่อน"
         },
-        tint: "#2d1b4e",
-        tintOpacity: 0.5,
-        mood: "lonely",
-        archetypeHint: "The Builder",
-        styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
-        dimensions: { selfWorth: 0, motivation: -1, pattern: -1 }
-      },
-      {
-        id: "mirror-honest-needs",
-        text: {
-          EN: "Nothing. I can't feel anything right now.",
-          TH: "ไม่มีอะไร รู้สึกชาอยู่"
-        },
-        internalNote: {
-          EN: "Sometimes the hardest thing to sit with is the absence of feeling.",
-          TH: "บางทีสิ่งที่อยู่ด้วยยากที่สุด คือความว่างเปล่าที่ไม่รู้สึกอะไรเลย"
-        },
+        effects: { secure: 15, avoidant: 10 },
         tint: "#1c2b1c",
-        tintOpacity: 0.4,
-        mood: "numb",
-        archetypeHint: "The Seeker",
-        styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
-        dimensions: { selfWorth: -2, motivation: -1, pattern: -2 }
+        tintOpacity: 0.25,
+        mood: "still",
+        next: "scene_2"
       }
     ]
   },
   {
-    id: "p1s3-repair",
-    phaseLabel: {
-      EN: "Phase 1 - Self Discovery",
-      TH: "เฟส 1 – ค้นพบตัวเอง"
-    },
-    sceneLabel: {
-      EN: "Scene 3 of 3",
-      TH: "ฉากที่ 3 จาก 3"
-    },
-    title: {
-      EN: "After the Mirror",
-      TH: "หลังมองเห็นกัน"
-    },
+    id: "scene_2",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 2", TH: "ฉาก 2" },
+    title: { EN: "The Emotional Mirror", TH: "กระจกสะท้อนอารมณ์" },
+    backgroundTint: null,
+    tintOpacity: 0,
+    mood: "neutral",
+    speaker: { EN: null, TH: null },
     description: {
-      EN:
-        "The moment passes. You can either repair gently, withdraw again, or stay present in quiet connection. What is your next move?",
-      TH:
-        "ช่วงเวลานั้นผ่านไปแล้ว ตอนนี้คุณมีทางเลือก: ค่อยๆ ซ่อมความสัมพันธ์ ถอยกลับเข้าเปลือกเดิม หรืออยู่ตรงนี้ด้วยกันอย่างสงบ คุณจะเลือกแบบไหน?"
+      EN: "Evening. You have not replied for hours. A soft knock comes at the door while you're trying to find what is left in you.",
+      TH: "ยามเย็น คุณยังไม่ได้ตอบข้อความผ่านมาหลายชั่วโมงแล้ว ระหว่างที่กำลังหาส่วนที่ยังเหลืออยู่ในตัวเอง ก็มีเสียงเคาะประตูเบาๆ"
+    },
+    choicePrompt: {
+      EN: "Your energy is low. What does your inner voice say?",
+      TH: "พลังงานในตัวคุณต่ำมาก เสียงข้างในบอกอะไร?"
     },
     choices: [
       {
-        id: "chase-reassurance",
-        text: {
-          EN: "Push for immediate reassurance because uncertainty still feels unbearable.",
-          TH: "เร่งขอความมั่นใจทันที เพราะความไม่ชัดยังหนักเกินจะทน"
+        id: "s2_space",
+        text: { EN: "\"I need to protect what little energy I have left.\"", TH: "\"ต้องปกป้องพลังงานที่เหลืออยู่น้อยนิดนี้ไว้\"" },
+        internalNote: {
+          EN: "Boundaries are not walls. They are the shape of your inner peace.",
+          TH: "ขอบเขตไม่ใช่กำแพง มันคือรูปร่างของความสงบภายในใจ"
         },
-        archetypeHint: "The Seeker",
-        styleImpact: { anxious: 2, secure: 0, avoidant: 0, fearful: 1 },
-        dimensions: { selfWorth: -1, motivation: -1, pattern: -2 }
+        effects: { avoidant: 15, secure: 10 },
+        tint: "#1c2b1c",
+        tintOpacity: 0.35,
+        mood: "still",
+        next: "scene_2b_space"
       },
       {
-        id: "repair-openly",
-        text: {
-          EN: "Speak softly and honestly: name your feelings, and invite a calm repair talk.",
-          TH: "พูดด้วยน้ำเสียงเบาและจริงใจ บอกความรู้สึกตรงๆ แล้วชวนคุยซ่อมความสัมพันธ์อย่างสงบ"
+        id: "s2_reach",
+        text: { EN: "\"Even tired, I want them to know I'm here.\"", TH: "\"แม้จะเหนื่อย แต่อยากให้เขา/เธอรู้ว่ายังอยู่ตรงนี้\"" },
+        internalNote: {
+          EN: "Showing up imperfectly is still showing up.",
+          TH: "การปรากฏตัวแม้ไม่สมบูรณ์ ก็ยังถือว่ามา"
         },
-        archetypeHint: "The Anchor",
-        styleImpact: { anxious: 0, secure: 2, avoidant: 0, fearful: 0 },
-        dimensions: { selfWorth: 2, motivation: 2, pattern: 2 }
+        effects: { secure: 25 },
+        tint: "#2a1a0a",
+        tintOpacity: 0.2,
+        mood: "warm",
+        next: "scene_2b_reach"
       },
       {
-        id: "stonewall",
-        text: {
-          EN: "Withdraw again and protect yourself by shutting the door emotionally.",
-          TH: "ถอยอีกครั้ง และปิดประตูทางอารมณ์เพื่อกันตัวเองไม่ให้เจ็บ"
+        id: "s2_fear",
+        text: { EN: "\"What if they're upset I haven't replied?\"", TH: "\"ถ้าเขา/เธอโกรธที่ยังไม่ตอบล่ะ?\"" },
+        internalNote: {
+          EN: "Fear of disapproval is an old wound asking to be seen.",
+          TH: "ความกลัวการถูกปฏิเสธคือบาดแผลเก่าที่ขอให้มองเห็นมัน"
         },
-        archetypeHint: "The Builder",
-        styleImpact: { anxious: 0, secure: 0, avoidant: 2, fearful: 1 },
-        dimensions: { selfWorth: 0, motivation: -1, pattern: -1 }
-      },
-      {
-        id: "freeze-cycle",
-        text: {
-          EN: "Want to reconnect, but fear takes over, so you wait in silence.",
-          TH: "จริงๆ ก็อยากเชื่อมใหม่ แต่ความกลัวนำหน้า เลยเงียบและรอไปก่อน"
-        },
-        archetypeHint: "The Nurturer",
-        styleImpact: { anxious: 1, secure: 0, avoidant: 1, fearful: 2 },
-        dimensions: { selfWorth: -1, motivation: -2, pattern: -2 }
+        effects: { anxious: 25 },
+        tint: "#2d1b4e",
+        tintOpacity: 0.4,
+        mood: "lonely",
+        next: "scene_2b_fear"
       }
     ]
-  }
+  },
+  {
+    id: "scene_2b_space",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 2-A", TH: "ฉาก 2-A" },
+    title: { EN: "Space", TH: "พื้นที่" },
+    backgroundTint: "#1c2b1c",
+    tintOpacity: 0.25,
+    mood: "still",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "You open the door slightly: \"I need quiet tonight.\" They answer, \"Okay. I'll be here.\" The door stays half-open, and so does something in you.",
+      TH: "คุณเปิดประตูนิดเดียว: \"คืนนี้ขอความเงียบนะ\" เขา/เธอตอบว่า \"โอเค ฉันอยู่ตรงนี้\" ประตูยังเปิดครึ่งหนึ่ง และบางอย่างในตัวคุณก็เช่นกัน"
+    },
+    choices: [{ id: "s2_space_continue", text: { EN: "Breathe. Let the quiet restore you.", TH: "หายใจ ให้ความเงียบฟื้นฟูคุณ" }, effects: { secure: 10 }, next: "scene_3" }]
+  },
+  {
+    id: "scene_2b_reach",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 2-B", TH: "ฉาก 2-B" },
+    title: { EN: "Reach", TH: "เอื้อมหา" },
+    backgroundTint: "#2a1a0a",
+    tintOpacity: 0.15,
+    mood: "warm",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "You open the door fully. No big words, just presence. They sit beside you and say, \"You don't have to talk. I know.\"",
+      TH: "คุณเปิดประตูเต็มที่ ไม่มีคำพูดใหญ่โต มีแค่การอยู่ข้างๆ เขา/เธอนั่งลงและพูดว่า \"ไม่ต้องพูดก็ได้ เรารู้อยู่\""
+    },
+    choices: [{ id: "s2_reach_continue", text: { EN: "Rest in that shared silence.", TH: "พักอยู่ในความเงียบที่แบ่งกันนั้น" }, effects: { secure: 10 }, next: "scene_3" }]
+  },
+  {
+    id: "scene_2b_fear",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 2-C", TH: "ฉาก 2-C" },
+    title: { EN: "Fear", TH: "ความกลัว" },
+    backgroundTint: "#2d1b4e",
+    tintOpacity: 0.3,
+    mood: "lonely",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "You apologize right away. They gently stop you: \"You don't owe me a constant signal. I just wanted to know you're okay.\"",
+      TH: "คุณขอโทษทันที เขา/เธอหยุดคุณเบาๆ: \"เธอไม่ต้องส่งสัญญาณตลอดเวลา แค่อยากรู้ว่าโอเคไหม\""
+    },
+    choices: [{ id: "s2_fear_continue", text: { EN: "Let that kindness in.", TH: "รับความกรุณานั้นเข้ามา" }, effects: { secure: 15, anxious: -10 }, next: "scene_3" }]
+  },
+  {
+    id: "scene_3",
+    phaseLabel: { EN: "Hearth - Story", TH: "Hearth - เรื่องราว" },
+    sceneLabel: { EN: "Scene 3", TH: "ฉาก 3" },
+    title: { EN: "The Soul Connection", TH: "การเชื่อมต่อของจิตวิญญาณ" },
+    backgroundTint: null,
+    tintOpacity: 0,
+    mood: "neutral",
+    speaker: { EN: null, TH: null },
+    description: {
+      EN: "Late night. They say: \"Sometimes I love you more than you let yourself be loved.\" The truth hangs in the room.",
+      TH: "ดึกมาก แล้วเขา/เธอพูดว่า: \"บางทีฉันรักเธอมากกว่าที่เธอยอมให้ตัวเองถูกรัก\" ความจริงลอยอยู่ในห้อง"
+    },
+    choicePrompt: {
+      EN: "Something deep shifts. How does your soul respond?",
+      TH: "บางอย่างข้างในขยับลึกๆ จิตวิญญาณคุณตอบสนองอย่างไร?"
+    },
+    choices: [
+      { id: "s3_receive", text: { EN: "\"You might be right. I'm still learning how.\"", TH: "\"อาจจะจริง ฉันยังเรียนรู้อยู่\"" }, effects: { secure: 30 }, next: "scene_summary" },
+      { id: "s3_deflect", text: { EN: "\"That's not fair. I show up, don't I?\"", TH: "\"นั่นไม่ยุติธรรมนะ ฉันก็อยู่ตรงนี้ตลอด\"" }, effects: { avoidant: 25 }, next: "scene_summary" },
+      { id: "s3_break", text: { EN: "Silence. Then tears you didn't know were there.", TH: "ความเงียบ แล้วก็น้ำตาที่ไม่รู้ว่ามีอยู่" }, effects: { anxious: 15, secure: 20 }, next: "scene_summary" }
+    ]
+  },
+  { id: "scene_summary", isSummary: true }
 ];
+
+export const ATTACHMENT_STYLE_SUMMARIES = {
+  secure: {
+    icon: "🌕",
+    name: { EN: "Secure", TH: "มั่นคง (Secure)" },
+    spiritual: {
+      EN: "Your energy moves like still water: clear, deep, and grounded. You can stay close without abandoning yourself.",
+      TH: "พลังงานของคุณเคลื่อนไหวเหมือนน้ำนิ่ง: ใส ลึก และมั่นคง คุณอยู่ใกล้ใครได้โดยไม่ทิ้งตัวเอง"
+    }
+  },
+  anxious: {
+    icon: "🌒",
+    name: { EN: "Anxious", TH: "วิตกกังวล (Anxious)" },
+    spiritual: {
+      EN: "Your heart feels intensely. Sensitivity is not weakness; it is a sacred signal asking for safety and gentle truth.",
+      TH: "หัวใจของคุณรับรู้อย่างเข้มข้น ความอ่อนไหวไม่ใช่จุดอ่อน แต่เป็นสัญญาณศักดิ์สิทธิ์ที่ขอความปลอดภัยและความจริงอย่างอ่อนโยน"
+    }
+  },
+  avoidant: {
+    icon: "🌑",
+    name: { EN: "Avoidant", TH: "หลีกเลี่ยง (Avoidant)" },
+    spiritual: {
+      EN: "You learned to survive by standing alone. Your next growth is not needing more, but letting trusted love in without disappearing.",
+      TH: "คุณเรียนรู้การอยู่รอดด้วยการยืนลำพัง การเติบโตต่อไปไม่ใช่การต้องการมากขึ้น แต่คือการยอมให้ความรักที่ไว้ใจได้เข้ามาโดยไม่หายไปจากตัวเอง"
+    }
+  },
+  fearful: {
+    icon: "🌘",
+    name: { EN: "Fearful", TH: "หวาดกลัว-หลบเลี่ยง (Fearful)" },
+    spiritual: {
+      EN: "You long for closeness and fear it at once. Your healing path is to move in small, honest steps where your body can still feel safe.",
+      TH: "คุณโหยหาความใกล้ชิดและกลัวมันพร้อมกัน เส้นทางเยียวยาคือการก้าวเล็กๆ อย่างซื่อสัตย์ ในจังหวะที่ร่างกายยังรู้สึกปลอดภัย"
+    }
+  }
+};
