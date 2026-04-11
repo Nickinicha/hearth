@@ -1,5 +1,5 @@
 import forestBg from
-  "./assets/images/forest-bg-horizon.jpg";
+  "./assets/images/forest-bg horizon.jpg";
 
 function App() {
   return (
