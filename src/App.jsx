@@ -1,18 +1,15 @@
-import forestBg from
-  "./assets/images/forest-bg horizon.jpg";
-
 function App() {
   return (
     <div
       style={{
-        backgroundImage: `url(${forestBg})`,
+        backgroundImage:
+          "url('/hearth/images/forest-bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         width: "100vw",
         height: "100vh",
       }}
     >
-
     </div>
   );
 }
