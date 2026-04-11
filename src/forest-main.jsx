@@ -1,14 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { ForestScene } from "./components/forest/ForestScene.jsx";
+import App from "./App.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ForestScene
-      onComplete={(data) => {
-        console.info("Forest scene complete", data);
-      }}
-    />
+    <App />
   </React.StrictMode>
 );
