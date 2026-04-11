@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HEARTH — The Relationship Sim</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="cursorTrail" aria-hidden="true"></div>
+  <canvas id="starfieldCanvas" class="starfield-canvas" aria-hidden="true"></canvas>
+  <canvas id="constellationCanvas" class="constellation-canvas" aria-hidden="true"></canvas>
+  <div id="tintOverlay" class="tint-overlay" aria-hidden="true"></div>
+  <div id="sceneTransition" class="scene-transition" aria-hidden="true"></div>
+  <p id="chapterLabel" class="chapter-label" aria-live="polite"></p>
+  <button type="button" id="langToggleBtn" class="lang-toggle-btn" aria-label="Switch language">
+    ไทย
+  </button>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="hero__mark">HEARTH</p>
+      <h1 class="hero__title">The Relationship Sim</h1>
+      <p class="hero__subtitle">
+        Discover your patterns. Practice secure choices.
+      </p>
+    </header>
+
+    <section class="panel" aria-live="polite">
+      <div class="panel__meta">
+        <p id="phaseLabel" class="meta-label"></p>
+        <p id="sceneLabel" class="meta-label"></p>
+      </div>
+
+      <h2 id="sceneTitle" class="panel__title"></h2>
+      <p id="sceneDescription" class="panel__description"></p>
+      <p id="sceneChoicePrompt" class="scene-choice-prompt"></p>
+      <p id="moodIndicator" class="mood-indicator" aria-live="polite"></p>
+
+      <div id="phase2Meta" class="phase2-meta" hidden>
+        <p id="phase2TurnLabel" class="phase2-turn"></p>
+        <div class="progress-wrap" aria-label="Progress toward Secure">
+          <div class="progress-track">
+            <div id="phase2ProgressFill" class="progress-fill"></div>
+          </div>
+          <p id="phase2ProgressText" class="progress-text"></p>
+        </div>
+      </div>
+
+      <div id="choiceContainer" class="choices" role="list"></div>
+
+      <div class="status-card">
+        <h3>Your current tendencies</h3>
+        <div id="attachmentStatus" class="status-grid"></div>
+      </div>
+
+      <p id="resultText" class="result-text"></p>
+      <p id="internalNote" class="internal-note" hidden></p>
+      <div class="action-row">
+        <button id="restartButton" class="secondary-btn" type="button" hidden>Restart Scene 1</button>
+        <button id="resetUiPrefsButton" class="secondary-btn secondary-btn--subtle" type="button" hidden>
+          Reset UI Preferences
+        </button>
+      </div>
+    </section>
+  </main>
+  <section id="breathScene" class="breath-scene" aria-live="polite" hidden>
+    <div id="breathOrb" class="breath-orb"></div>
+    <p id="breathInstruction" class="breath-instruction"></p>
+    <button id="breathContinueBtn" class="secondary-btn" type="button"></button>
+  </section>
+  <noscript>
+    <div style="margin:16px;padding:12px;border:1px solid #d9ccb5;border-radius:8px;background:#fffdf8;color:#1f1d1b;font-family:Inter,sans-serif;">
+      JavaScript is disabled. This app requires JavaScript to render the UI.
+    </div>
+  </noscript>
+
+  <script type="module" src="js/main.js"></script>
+  <script>
+    window.addEventListener("error", (event) => {
+      const target = event && event.target;
+      if (target && target.tagName === "SCRIPT" && target.getAttribute("src") === "js/main.js") {
+        const existing = document.getElementById("moduleErrorFallback");
+        if (existing) return;
+        const fallback = document.createElement("div");
+        fallback.id = "moduleErrorFallback";
+        fallback.style.margin = "16px";
+        fallback.style.padding = "12px";
+        fallback.style.border = "1px solid #d9ccb5";
+        fallback.style.borderRadius = "8px";
+        fallback.style.background = "#fffdf8";
+        fallback.style.color = "#1f1d1b";
+        fallback.style.fontFamily = "Inter, sans-serif";
+        fallback.textContent =
+          "Failed to load app scripts. Open this app through a local server (http://localhost), not file://.";
+        document.body.prepend(fallback);
+      }
+    }, true);
+  </script>
+</body>
+</html>

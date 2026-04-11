@@ -1,9 +1,11 @@
+import forestBg from
+  "./assets/images/forest-bg-horizon.jpg";
+
 function App() {
   return (
     <div
       style={{
-        backgroundImage:
-          `url(${process.env.PUBLIC_URL + "/images/forest-bg-horizon.jpg"})`,
+        backgroundImage: `url(${forestBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         width: "100vw",
