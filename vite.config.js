@@ -6,9 +6,13 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  base: "/hearth/",
+  define: {
+    "process.env.PUBLIC_URL": JSON.stringify("/hearth"),
+  },
   plugins: [react()],
   server: {
-    open: "/forest.html"
+    open: "/hearth/forest.html",
   },
   build: {
     rollupOptions: {

@@ -3,7 +3,7 @@ function App() {
     <div
       style={{
         backgroundImage:
-          "url('/images/forest-bg.jpg')",
+          `url(${process.env.PUBLIC_URL + "/images/forest-bg-horizon.jpg"})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         width: "100vw",
